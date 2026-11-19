@@ -224,16 +224,94 @@ window.Chars3D = (function () {
     },
   };
 
+  // ---- Real character models (GLB) ---------------------------------------------------
+  // models/<id>.glb is a rigged character; optional models/<id>-<clip>.glb files add clips
+  // (idle, run, jump, cheer) on the same skeleton. Missing files fall back to the procedural
+  // placeholder above, so the game always runs.
+  const GLB = {};
+  const CLIP_FILES = ['idle', 'run', 'jump', 'cheer'];
+  let refHeight = 0;
+  function loadGLB(url) {
+    return new Promise((res) => {
+      if (!T.GLTFLoader) return res(null);
+      new T.GLTFLoader().load(url, (g) => res(g), undefined, () => res(null));
+    });
+  }
+  async function preload(base = 'models/') {
+    if (!refHeight) {
+      const ref = BUILD.astro();
+      refHeight = new T.Box3().setFromObject(ref.root).getSize(new T.Vector3()).y || 1.3;
+    }
+    await Promise.all(CHARACTERS.map(async (c) => {
+      const g = await loadGLB(base + c.id + '.glb');
+      if (!g) return;
+      const clips = {};
+      g.animations.forEach((a) => { clips[a.name.toLowerCase()] = a; });
+      await Promise.all(CLIP_FILES.map(async (k) => {
+        const e = await loadGLB(base + c.id + '-' + k + '.glb');
+        if (e && e.animations[0]) clips[k] = e.animations[0];
+      }));
+      g.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = false; if (o.material) o.material.envMapIntensity = 1; } });
+      GLB[c.id] = { scene: g.scene, clips };
+    }));
+    return Object.keys(GLB);
+  }
+
+  function createGLB(id) {
+    const src = GLB[id];
+    const model = T.SkeletonUtils ? T.SkeletonUtils.clone(src.scene) : src.scene.clone(true);
+    // Fit to the gameplay height, feet on y = 0, facing +X like the placeholder rigs.
+    const box = new T.Box3().setFromObject(model);
+    const size = box.getSize(new T.Vector3());
+    const k = refHeight / (size.y || 1);
+    model.scale.setScalar(k);
+    model.position.set(-(box.min.x + size.x / 2) * k, -box.min.y * k, -(box.min.z + size.z / 2) * k);
+    const body = new T.Group();
+    body.rotation.y = Math.PI / 2;
+    body.add(model);
+    const root = new T.Group();
+    root.add(body);
+    const mixer = new T.AnimationMixer(model);
+    const actions = {};
+    for (const [k2, clip] of Object.entries(src.clips)) actions[k2] = mixer.clipAction(clip);
+    return { root, body, model, mixer, actions, glb: true, current: null };
+  }
+
   function create(id) {
-    const p = BUILD[id] ? BUILD[id]() : BUILD.astro();
+    const p = GLB[id] ? createGLB(id) : (BUILD[id] ? BUILD[id]() : BUILD.astro());
     p.id = id;
     p.root.userData.char = p;
     p.phase = Math.random() * 10;
     return p;
   }
 
+  const pick = (a, ...names) => { for (const n of names) for (const k of Object.keys(a)) if (k.includes(n)) return k; return null; };
+  function animateGLB(p, state, dt, speed) {
+    const a = p.actions;
+    let want = null;
+    if (state === 'run') want = pick(a, 'run', 'walk');
+    else if (state === 'jump' || state === 'fall') want = pick(a, 'jump') || pick(a, 'run');
+    else if (state === 'cheer' || state === 'wave') want = pick(a, 'cheer', 'wave', 'idle');
+    else if (state === 'stun') want = pick(a, 'idle');
+    else want = pick(a, 'idle');
+    if (want && p.current !== want) {
+      const next = a[want];
+      next.reset().play();
+      if (p.current) a[p.current].crossFadeTo(next, 0.18, false);
+      p.current = want;
+    }
+    if (want) a[want].timeScale = state === 'run' ? Math.max(0.8, speed / 6) : state === 'fall' ? 0.3 : 1;
+    p.mixer.update(dt);
+    // Small procedural accents on top of the clips.
+    p.phase += dt * 4;
+    const tilt = state === 'stun' ? Math.sin(p.phase * 6) * 0.15 : state === 'jump' ? -0.08 : 0;
+    p.body.rotation.z += (tilt - p.body.rotation.z) * Math.min(1, 10 * dt);
+    p.body.position.y = !pick(a, 'idle') && state === 'idle' ? Math.sin(p.phase) * 0.015 : 0;
+  }
+
   // state: idle | run | jump | fall | cheer | stun | wave. speed is run speed in units/s.
   function animate(p, state, dt, speed = 0) {
+    if (p.glb) return animateGLB(p, state, dt, speed);
     p.phase += dt * (state === 'run' ? Math.max(6, speed * 2.2) : 4);
     const t = p.phase;
     const [lL, lR] = p.legs, [aL, aR] = p.arms;
@@ -308,9 +386,10 @@ window.Chars3D = (function () {
       shotRenderer.render(scene, cam); shots.full = shotRenderer.domElement.toDataURL('image/png');
       scene.remove(p.root);
       out[c.id] = shots;
+      // (GLB models are framed by the same cameras: they share the placeholder height.)
     }
     return out;
   }
 
-  return { CHARACTERS, create, animate, portraits, byId: (id) => CHARACTERS.find((c) => c.id === id) || CHARACTERS[0] };
+  return { CHARACTERS, create, animate, portraits, preload, hasModel: (id) => !!GLB[id], byId: (id) => CHARACTERS.find((c) => c.id === id) || CHARACTERS[0] };
 })();

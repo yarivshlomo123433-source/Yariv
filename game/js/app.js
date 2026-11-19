@@ -107,6 +107,7 @@
 
   async function boot() {
     Race.getRenderer();
+    try { await C.preload(); } catch (e) { console.warn('models', e); }
     Race.run(Race.showcase({ ids: C.CHARACTERS.map((c) => c.id), cam: { pos: [0, 1.5, 9.4], look: [0, 0.6, 0] }, anim: (i, t) => (Math.floor(t * 0.8 + i) % 3 ? 'run' : 'cheer') }));
     loading(10, 'Waking up the racers');
     await frame();
