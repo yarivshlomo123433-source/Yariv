@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 48" width="60" height="48">
+  <!-- Spiky slime that walks along the ground. 2x the in-game size (30x24). Faces left. -->
+  <defs>
+    <radialGradient id="body" cx="0.35" cy="0.3" r="0.85">
+      <stop offset="0" stop-color="#d9a6ff"/>
+      <stop offset="0.4" stop-color="#9b4fd6"/>
+      <stop offset="0.85" stop-color="#5f2a94"/>
+      <stop offset="1" stop-color="#47206f"/>
+    </radialGradient>
+    <linearGradient id="spike" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe2a8"/>
+      <stop offset="1" stop-color="#e2a23a"/>
+    </linearGradient>
+    <radialGradient id="eye" cx="0.4" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e2d6f2"/>
+    </radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="0.8"/></filter>
+  </defs>
+  <g stroke="#1b1f3b" stroke-width="2" stroke-linejoin="round" fill="url(#spike)">
+    <path d="M14 18 L 18 4 L 24 16 Z"/>
+    <path d="M24 15 L 30 1 L 36 15 Z"/>
+    <path d="M36 16 L 42 4 L 46 18 Z"/>
+  </g>
+  <path d="M4 40 C 4 22, 16 12, 30 12 C 44 12, 56 22, 56 40 C 56 45, 52 46, 30 46 C 8 46, 4 45, 4 40 Z"
+        fill="url(#body)" stroke="#1b1f3b" stroke-width="2.4"/>
+  <ellipse cx="18" cy="21" rx="6" ry="3.6" transform="rotate(-25 18 21)" fill="#ffffff" opacity="0.7" filter="url(#soft)"/>
+  <path d="M52 30 C 54 36, 53 41, 47 43" fill="none" stroke="#c78cf5" stroke-width="1.6" stroke-linecap="round" opacity="0.6"/>
+  <!-- angry eyes, looking left -->
+  <ellipse cx="20" cy="29" rx="6" ry="6.5" fill="url(#eye)" stroke="#1b1f3b" stroke-width="2"/>
+  <ellipse cx="36" cy="29" rx="6" ry="6.5" fill="url(#eye)" stroke="#1b1f3b" stroke-width="2"/>
+  <ellipse cx="18" cy="30" rx="2.8" ry="3.4" fill="#1b1f3b"/>
+  <ellipse cx="34" cy="30" rx="2.8" ry="3.4" fill="#1b1f3b"/>
+  <circle cx="19" cy="28.6" r="1" fill="#ffffff"/>
+  <circle cx="35" cy="28.6" r="1" fill="#ffffff"/>
+  <path d="M13 21.5 L 24 24.5 M43 21.5 L 32 24.5" stroke="#1b1f3b" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M22 40 C 26 37.5, 32 37.5, 36 40" fill="none" stroke="#1b1f3b" stroke-width="2" stroke-linecap="round"/>
+</svg>

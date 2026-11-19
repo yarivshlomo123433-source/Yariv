@@ -1,28 +1,41 @@
 # Coin Hopper
 
-A small browser platformer built with Phaser 4.2.1: run, jump, double jump, collect coins,
-stomp enemies and reach the flag in three short levels.
+An online platform race for up to 4 friends, built with Phaser 4.2.1. Every race runs on a
+newly generated course, and power-ups on the floor let you slow the others down.
 
 ## Play
 
-From this folder:
+The online version is published as a claude.ai artifact. Online rooms use the artifact
+`room` capability, so friends need a claude.ai account and access to the artifact (Share menu).
 
-```bash
-python3 -m http.server 8080
-```
+Locally, open `index.html` in a browser (or serve the folder with `python3 -m http.server`).
+Without claude.ai, only solo races are available.
 
-Then open http://localhost:8080 in a browser. Opening `index.html` directly also works,
-since the game has no asset files to load.
+## How it works
+
+- **Rooms:** one player creates a room and shares the 4-letter code; up to 4 can join.
+  The first player in the room is the host and starts each race.
+- **Courses:** `levelgen.js` builds a course from a seed. The host shares the seed, so every
+  player gets the same course; every race uses a new seed.
+- **Sync:** `net.js` sends each player's position and actions through room presence. Each
+  player's browser moves only its own runner and draws the others from what they send.
+- **Powers** (from the glowing capsules, or every 5 coins): fireball (stuns whoever it hits),
+  slime trap (dropped behind you; others slip), lightning (stuns everyone ahead of you) and
+  speed boost. Players further behind get more attack powers.
 
 ## Controls
 
 - Arrow keys or A / D: run
-- Up, W or Space: jump (press again in the air for a double jump; release early for a short hop)
-- Land on an enemy from above to stomp it; touching it from the side restarts the level
+- Up, W or Space: jump; press again in the air for a double jump
+- X, Shift or E: use your power
+- On phones: on-screen buttons
 
 ## Files
 
-- `index.html`: page that loads the scripts
-- `levels.js`: the three level maps as text grids (edit these to change the levels)
-- `main.js`: scenes, player, enemies and generated art
+- `index.html`: page, menus and touch buttons
+- `main.js`: scenes, player, powers, enemies and the online race flow
+- `levelgen.js`: seeded course generator
+- `net.js`: wrapper around the artifact room capability
+- `art.js`: generated from `art/svg/*.svg` by `node art/build-art.js`
+- `art/`: SVG sources and the build script (`render.js` renders a style board)
 - `vendor/phaser.min.js`: Phaser 4.2.1 (MIT license, see `vendor/PHASER-LICENSE.md`)
