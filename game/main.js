@@ -8,8 +8,15 @@ const VIEW_H = 448;
 
 // Movement tuning (pixels, seconds). One jump reaches about 3.5 tiles, a double jump about 7.
 const RUN_SPEED = 220;
-const GROUND_ACCEL = 18;   // how fast horizontal speed approaches the target, per second
-const AIR_ACCEL = 11;
+// Horizontal speed eases toward the target with 1 - exp(-rate * dt), so it feels the same at any
+// frame rate. Higher rate = snappier. Stopping and turning are quicker than speeding up.
+const GROUND_ACCEL = 14;
+const GROUND_DECEL = 20;
+const TURN_RATE = 26;
+const AIR_ACCEL = 8;
+const AIR_DECEL = 5;
+const APEX_THRESHOLD = 0.35;  // near the top of a held jump (|vy| < 35% of launch), gravity halves
+const APEX_GRAVITY = 0.5;
 const GRAVITY = 1400;
 const JUMP_VELOCITY = 560;
 const FALL_EXTRA_GRAVITY = 900;  // heavier fall than rise, so the jump feels less floaty
@@ -19,6 +26,25 @@ const COYOTE_MS = 100;     // grace period to jump after walking off a ledge
 const BUFFER_MS = 120;     // a press shortly before landing still jumps
 const ENEMY_SPEED = 60;
 const STOMP_BOUNCE = 420;
+
+// Camera: the player can move inside a small box before the camera chases, the view leads
+// in the running direction, and following is smoothed independently of frame rate.
+const CAM_DEADZONE_X = 24;
+const CAM_DEADZONE_Y = 40;
+const CAM_LOOK_AHEAD = 90;    // pixels shown ahead of the player while running
+const CAM_LEAD_RATE = 2.5;    // how quickly the look-ahead swings when changing direction
+const CAM_FOLLOW_RATE = 7;
+const CAM_FOLLOW_RATE_FALLING = 12;  // catch up faster when falling so pits stay in view
+
+// Screen shake from decaying "trauma" (0..1). Shake strength = trauma squared, so small
+// events barely move the screen. Set SHAKE_STRENGTH to 0 to turn shaking off.
+const SHAKE_STRENGTH = 1;
+const SHAKE_MAX_OFFSET = 9;   // pixels
+const SHAKE_MAX_ROLL = 0.012; // radians
+const SHAKE_DECAY = 1.6;      // trauma lost per second
+const TRAUMA_HIT = 0.55;
+const TRAUMA_STOMP = 0.3;
+const HIT_STOP_MS = 90;       // brief freeze on the frame the player is hit
 
 const HUD_STYLE = {
   fontFamily: 'Trebuchet MS, Verdana, sans-serif',
@@ -139,6 +165,11 @@ class PlayScene extends Phaser.Scene {
     this.jumpsUsed = 0;
     this.lastGround = -Infinity;
     this.lastPress = -Infinity;
+    this.wasOnGround = false;
+    this.fallSpeed = 0;
+    this.trauma = 0;
+    this.shakeTime = 0;
+    this.spinning = false;
   }
 
   create() {
@@ -203,10 +234,16 @@ class PlayScene extends Phaser.Scene {
     this.physics.add.overlap(this.player, this.enemies, (_p, enemy) => this.touchEnemy(enemy));
     this.physics.add.overlap(this.player, this.flag, () => this.reachFlag());
 
+    // The camera is driven by hand in updateCamera(), after physics has moved the player.
+    // Start already centred on the player so a level never opens with a swoop.
     const cam = this.cameras.main;
-    cam.setBounds(0, 0, this.worldW, this.worldH);
-    cam.startFollow(this.player, true, 0.12, 0.12);
+    this.camFocus = { x: this.player.x, y: this.player.y };
+    this.camLead = 0;
+    this.camPos = { x: this.player.x, y: this.player.y };
+    this.applyCamera();
     cam.fadeIn(250);
+    this.events.on(Phaser.Scenes.Events.POST_UPDATE, this.updateCamera, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.events.off(Phaser.Scenes.Events.POST_UPDATE, this.updateCamera, this));
 
     this.keys = this.input.keyboard.addKeys({
       left: 'LEFT', right: 'RIGHT', up: 'UP', a: 'A', d: 'D', w: 'W', space: 'SPACE',
@@ -255,6 +292,8 @@ class PlayScene extends Phaser.Scene {
       body.setVelocityY(-STOMP_BOUNCE);
       this.jumpsUsed = 1;
       this.spawnPuff(enemy.x, enemy.y, 0xd0bfff, 6);
+      this.addTrauma(TRAUMA_STOMP);
+      this.squash(0.8, 1.25, 160);
     } else {
       this.die();
     }
@@ -277,11 +316,73 @@ class PlayScene extends Phaser.Scene {
   die() {
     if (this.dead || this.finished) return;
     this.dead = true;
-    this.cameras.main.shake(200, 0.01);
+    this.addTrauma(TRAUMA_HIT);
+    this.cameras.main.flash(90, 255, 255, 255);
     this.player.setTint(0xff6b6b);
     this.player.body.enable = false;
-    this.tweens.add({ targets: this.player, y: this.player.y - 40, angle: 180, duration: 350, yoyo: true });
-    this.time.delayedCall(900, () => this.scene.restart({ level: this.levelIndex, score: this.startScore }));
+    // Hit-stop: freeze physics and tweens for a moment so the hit registers, then play the death hop.
+    this.physics.world.pause();
+    this.tweens.pauseAll();
+    setTimeout(() => {
+      if (!this.sys.isActive()) return;
+      this.physics.world.resume();
+      this.tweens.resumeAll();
+      this.tweens.add({ targets: this.player, y: this.player.y - 40, angle: 180, duration: 350, yoyo: true });
+      this.time.delayedCall(800, () => this.scene.restart({ level: this.levelIndex, score: this.startScore }));
+    }, HIT_STOP_MS);
+  }
+
+  addTrauma(amount) {
+    this.trauma = Math.min(1, this.trauma + amount);
+  }
+
+  // Squash and stretch: jump to a scale, then ease back to normal.
+  squash(sx, sy, duration) {
+    this.tweens.killTweensOf(this.player, ['scaleX', 'scaleY']);
+    this.player.setScale(sx, sy);
+    this.tweens.add({ targets: this.player, scaleX: 1, scaleY: 1, duration, ease: 'Back.easeOut' });
+  }
+
+  updateCamera(_time, delta) {
+    const dt = Math.min(delta, 50) / 1000;
+    const p = this.player;
+    if (!this.dead) {
+      // Deadzone: move the focus only by how far the player has left the box.
+      const dx = p.x - this.camFocus.x;
+      const dy = p.y - this.camFocus.y;
+      if (Math.abs(dx) > CAM_DEADZONE_X) this.camFocus.x += dx - Math.sign(dx) * CAM_DEADZONE_X;
+      if (Math.abs(dy) > CAM_DEADZONE_Y) this.camFocus.y += dy - Math.sign(dy) * CAM_DEADZONE_Y;
+      // Look-ahead eases toward the running direction, so turning around doesn't whip the view.
+      const vx = p.body.velocity.x;
+      const leadGoal = Math.abs(vx) > 40 ? Math.sign(vx) * CAM_LOOK_AHEAD : this.camLead;
+      this.camLead += (leadGoal - this.camLead) * (1 - Math.exp(-CAM_LEAD_RATE * dt));
+    }
+    const rate = p.body.velocity.y > 200 ? CAM_FOLLOW_RATE_FALLING : CAM_FOLLOW_RATE;
+    const t = 1 - Math.exp(-rate * dt);
+    this.camPos.x += (this.camFocus.x + this.camLead - this.camPos.x) * t;
+    this.camPos.y += (this.camFocus.y - this.camPos.y) * t;
+
+    // Shake decays in real time, so it also settles during the hit-stop freeze.
+    this.trauma = Math.max(0, this.trauma - SHAKE_DECAY * dt);
+    this.shakeTime += dt * 30;
+    this.applyCamera();
+  }
+
+  applyCamera() {
+    const cam = this.cameras.main;
+    // Clamp the view to the level first, then add the shake on top so it also works at the edges.
+    const maxX = Math.max(0, this.worldW - VIEW_W);
+    const maxY = Math.max(0, this.worldH - VIEW_H);
+    const sx = Phaser.Math.Clamp(this.camPos.x - VIEW_W / 2, 0, maxX);
+    const sy = Phaser.Math.Clamp(this.camPos.y - VIEW_H / 2, 0, maxY);
+    // Summed sines at unrelated rates give a smooth wobble instead of a random per-frame buzz.
+    const shake = this.trauma * this.trauma * SHAKE_STRENGTH;
+    const k = this.shakeTime;
+    cam.setScroll(
+      sx + SHAKE_MAX_OFFSET * shake * Math.sin(k * 1.7),
+      sy + SHAKE_MAX_OFFSET * shake * Math.sin(k * 2.3 + 1),
+    );
+    cam.setRotation(SHAKE_MAX_ROLL * shake * Math.sin(k * 1.1 + 2));
   }
 
   spawnPuff(x, y, color, count) {
@@ -292,12 +393,23 @@ class PlayScene extends Phaser.Scene {
     }
   }
 
+  spawnDust(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const p = this.add.image(x + side * 6, y - 3, 'puff').setTint(0xe9dcc9).setScale(0.5);
+      this.tweens.add({ targets: p, x: p.x + side * (12 + i * 4), y: p.y - 6, alpha: 0, scale: 0.15, duration: 280, ease: 'Quad.easeOut', onComplete: () => p.destroy() });
+    }
+  }
+
   jump(isAir) {
     this.player.body.setVelocityY(-JUMP_VELOCITY);
     this.lastPress = -Infinity;
+    this.squash(0.78, 1.25, 220);
+    if (!isAir) this.spawnDust(this.player.x, this.player.body.bottom, 3);
     if (isAir) {
       this.spawnPuff(this.player.x, this.player.body.bottom, 0xffffff, 6);
-      this.tweens.add({ targets: this.player, angle: this.player.flipX ? -360 : 360, duration: 300, onComplete: () => this.player.setAngle(0) });
+      this.spinning = true;
+      this.tweens.add({ targets: this.player, angle: this.player.flipX ? -360 : 360, duration: 300, onComplete: () => { this.spinning = false; this.player.setAngle(0); } });
     }
   }
 
@@ -317,11 +429,26 @@ class PlayScene extends Phaser.Scene {
       this.jumpsUsed = 0;
     }
 
-    // Run.
+    // Landing: squash in proportion to how hard the player hit the ground, plus a little dust.
+    if (onGround && !this.wasOnGround && this.fallSpeed > 150) {
+      const amount = Phaser.Math.Clamp((this.fallSpeed - 150) / 700, 0, 1);
+      this.squash(1 + 0.3 * amount, 1 - 0.25 * amount, 180);
+      this.spawnDust(this.player.x, body.bottom, 2 + Math.round(amount * 4));
+    }
+    this.wasOnGround = onGround;
+    if (!onGround) this.fallSpeed = Math.max(0, body.velocity.y);
+
+    // Run: ease toward the target speed, frame-rate independent.
+    const dt = Math.min(delta, 50) / 1000;
     const dir = ((k.right.isDown || k.d.isDown) ? 1 : 0) - ((k.left.isDown || k.a.isDown) ? 1 : 0);
-    const accel = (onGround ? GROUND_ACCEL : AIR_ACCEL) * (delta / 1000);
-    body.setVelocityX(body.velocity.x + (dir * RUN_SPEED - body.velocity.x) * Math.min(1, accel));
-    if (Math.abs(body.velocity.x) < 4 && dir === 0) body.setVelocityX(0);
+    const vx = body.velocity.x;
+    let rate;
+    if (dir === 0) rate = onGround ? GROUND_DECEL : AIR_DECEL;
+    else if (vx !== 0 && Math.sign(vx) !== dir) rate = onGround ? TURN_RATE : AIR_ACCEL * 1.5;
+    else rate = onGround ? GROUND_ACCEL : AIR_ACCEL;
+    let newVx = vx + (dir * RUN_SPEED - vx) * (1 - Math.exp(-rate * dt));
+    if (dir === 0 && Math.abs(newVx) < 5) newVx = 0;
+    body.setVelocityX(newVx);
     if (dir !== 0) this.player.setFlipX(dir < 0);
 
     // Jump, double jump, coyote time and jump buffering.
@@ -344,12 +471,14 @@ class PlayScene extends Phaser.Scene {
       if (!held) body.setVelocityY(body.velocity.y * JUMP_CUT);
     }
     if (released && body.velocity.y < 0) body.setVelocityY(body.velocity.y * JUMP_CUT);
-    body.setGravityY(body.velocity.y > 0 ? FALL_EXTRA_GRAVITY : 0);
+    // Gravity: heavier when falling, lighter for a moment at the top of a held jump (apex hang).
+    const vy = body.velocity.y;
+    if (vy > 0 && !(held && vy < JUMP_VELOCITY * APEX_THRESHOLD)) body.setGravityY(FALL_EXTRA_GRAVITY);
+    else if (held && Math.abs(vy) < JUMP_VELOCITY * APEX_THRESHOLD) body.setGravityY(-GRAVITY * (1 - APEX_GRAVITY));
+    else body.setGravityY(0);
 
-    // Lean into the motion a little.
-    if (!this.tweens.isTweening(this.player)) {
-      this.player.setScale(onGround ? 1 : 0.92, onGround ? 1 : 1.08);
-    }
+    // Lean slightly into the run direction.
+    if (!this.spinning) this.player.setAngle(newVx / RUN_SPEED * 4);
 
     this.updateEnemies();
   }
