@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin Hopper world directions</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@800;900&display=swap">
+<style>
+  /* Three art directions for the race screen (844 x 390 each). Characters come from window.U. */
+  :root { --ink: #161a33; --display: "Lilita One", sans-serif; --body: "Nunito", sans-serif; }
+  body { margin: 0; background: #000; font-family: var(--body); color: #fff; }
+  .stage { position: relative; width: 844px; height: 390px; overflow: hidden; }
+  .stage > svg.world { position: absolute; inset: 0; width: 844px; height: 390px; }
+  .abs { position: absolute; }
+  .tag { position: absolute; transform: translateX(-50%); font: 900 10px var(--body); padding: 2px 8px; border-radius: 999px; border: 2px solid var(--ink); white-space: nowrap; }
+  .avatar { width: 22px; height: 22px; border-radius: 50%; overflow: hidden; position: absolute; background: radial-gradient(circle at 35% 30%, #fff, #cfe0f7); border: 2px solid #fff; }
+  .avatar img { position: absolute; width: 150%; left: -18%; top: -6%; }
+  .hud-pill { position: absolute; left: 12px; top: 10px; border-radius: 14px; padding: 5px 12px 6px; display: flex; gap: 10px; align-items: center; backdrop-filter: blur(8px); }
+  .rank { position: absolute; left: 16px; top: 52px; font: 400 46px/0.9 var(--display); }
+  .rank .b { position: absolute; left: 0; top: 0; color: var(--ink); -webkit-text-stroke: 7px var(--ink); text-shadow: 0 4px 0 var(--ink); }
+  .rank .f { position: relative; -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .track { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); width: 330px; height: 16px; border-radius: 999px; backdrop-filter: blur(8px); }
+  .orb { position: absolute; right: 12px; top: 8px; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; }
+  .pad { position: absolute; border-radius: 50%; display: grid; place-items: center; }
+  .name { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); font: 400 18px var(--display); letter-spacing: 1px; padding: 4px 16px; border-radius: 999px; border: 2px solid var(--ink); }
+</style>
+</head>
+<body>
+<div class="stage" id="d-islands"></div>
+<div class="stage" id="d-neon"></div>
+<div class="stage" id="d-candy"></div>
+<script>
+const W = 844, H = 390;
+const ICON_L = (c) => `<svg viewBox="0 0 24 24" width="30" height="30"><path d="M15.5 4 7 12l8.5 8" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_R = (c) => `<svg viewBox="0 0 24 24" width="30" height="30"><path d="M8.5 4 17 12l-8.5 8" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_U = (c) => `<svg viewBox="0 0 24 24" width="40" height="40"><path d="M4 16 12 7.5 20 16" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const TIMER = (c) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="${c}" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 3h5"/></svg>`;
+const CH = { hopper: '#4f86da', frogo: '#4cbf5a', mimi: '#e8559a', bolt: '#f2c230', pingo: '#6f8cff', foxy: '#ff8a3d' };
+const rnd = (() => { let s = 7; return () => (s = (s * 9301 + 49297) % 233280) / 233280; })();
+
+// Shared race layout: where the runners, coins, enemy and capsule stand, per world.
+function actors(stage, ground, opts) {
+  const glow = opts.glow || '';
+  let h = '';
+  opts.coins.forEach(([x, y]) => h += `<img class="abs" src="${U.coin}" style="left:${x - 12}px;top:${y - 12}px;width:24px;filter:drop-shadow(0 0 ${opts.coinGlow || 6}px ${opts.coinGlowColor || 'rgba(255,220,90,0.9)'})">`);
+  const [bx, by] = opts.box;
+  h += `<img class="abs" src="${U.box}" style="left:${bx - 20}px;top:${by - 20}px;width:40px;filter:drop-shadow(0 0 12px rgba(150,240,255,0.95))">`;
+  const [ex, ey] = opts.enemy;
+  h += `<img class="abs" src="${U.enemy}" style="left:${ex - 20}px;top:${ey - 29}px;width:40px;filter:${glow}">`;
+  opts.runners.forEach(([c, x, y, name, rot]) => {
+    if (!opts.noShadow) h += `<div class="abs" style="left:${x - 17}px;top:${y - 4}px;width:34px;height:8px;border-radius:50%;background:radial-gradient(${opts.shadow || 'rgba(20,10,0,0.45)'},rgba(0,0,0,0))"></div>`;
+    h += `<img class="abs" src="${U['char-' + c]}" style="left:${x - 21}px;top:${y - 47}px;width:42px;transform:rotate(${rot}deg);filter:${glow}">`;
+    h += `<div class="tag" style="left:${x}px;top:${y - 66}px;background:${name === 'YOU' ? '#ffd23f' : CH[c]};color:${name === 'YOU' ? '#3a2400' : '#fff'};${opts.tagExtra || ''}">${name}</div>`;
+  });
+  const [fx, fy] = opts.fire;
+  h += `<img class="abs" src="${U.fireball}" style="left:${fx}px;top:${fy - 14}px;width:46px;filter:drop-shadow(0 0 12px rgba(255,140,40,0.95))">`;
+  stage.insertAdjacentHTML('beforeend', h);
+}
+
+function hud(stage, t) {
+  const marks = [['mimi', 0.16], ['frogo', 0.3], ['hopper', 0.5], ['foxy', 0.68]].map(([c, p]) =>
+    `<div class="avatar" style="left:${8 + p * 294 - (c === 'hopper' ? 15 : 11)}px;top:${c === 'hopper' ? -7 : -3}px;width:${c === 'hopper' ? 30 : 22}px;height:${c === 'hopper' ? 30 : 22}px;box-shadow:0 0 0 2px var(--ink),0 0 0 4px ${CH[c]}"><img src="${U['char-' + c]}"></div>`).join('');
+  const pips = Array.from({ length: 5 }, (_, i) => `<i style="width:10px;height:10px;border-radius:50%;border:2px solid ${t.pipLine};background:${i < 3 ? 'radial-gradient(circle at 35% 30%,#fff3b0,#ffcc33 50%,#c47f0a)' : t.pipOff}"></i>`).join('');
+  stage.insertAdjacentHTML('beforeend', `
+    <div class="hud-pill" style="background:${t.glass};border:1.5px solid ${t.line};box-shadow:${t.glow || 'none'}">${TIMER(t.accent)}
+      <span style="font:400 22px/1 var(--display)">0:24.31</span><span style="font:900 10px var(--body);color:${t.muted};border-left:1px solid ${t.line};padding-left:10px">RACE 2/3</span></div>
+    <div class="rank"><span class="b">2<span style="font-size:22px">ND</span></span><span class="f" style="background-image:${t.rankGrad}">2<span style="font-size:22px">ND</span></span></div>
+    <div class="track" style="background:${t.glass};border:1.5px solid ${t.line}">
+      <div class="abs" style="left:8px;right:28px;top:5px;height:4px;border-radius:2px;background:rgba(255,255,255,0.25)"></div>
+      <div class="abs" style="left:8px;width:52%;top:5px;height:4px;border-radius:2px;background:${t.bar};box-shadow:${t.barGlow || 'none'}"></div>
+      <img class="abs" src="${U.flag}" style="right:2px;top:-12px;width:20px">${marks}</div>
+    <div class="abs" style="right:84px;top:30px;display:flex;gap:3px">${pips}</div>
+    <div class="orb" style="background:${t.glass};border:3px solid ${t.accent};box-shadow:0 0 18px ${t.orbGlow}"><img src="${U.fireball}" style="width:40px"></div>
+    <div class="pad" style="left:18px;bottom:14px;width:72px;height:72px;background:${t.padBg};border:2px solid ${t.padLine}">${ICON_L('#fff')}</div>
+    <div class="pad" style="left:104px;bottom:14px;width:72px;height:72px;background:${t.padBg};border:2px solid ${t.padLine}">${ICON_R('#fff')}</div>
+    <div class="pad" style="right:122px;bottom:48px;width:68px;height:68px;background:${t.powerBg};border:3px solid ${t.powerLine};box-shadow:0 0 20px ${t.powerGlow}"><img src="${U.fireball}" style="width:40px"></div>
+    <div class="pad" style="right:18px;bottom:14px;width:90px;height:90px;background:${t.jumpBg};border:3px solid ${t.jumpLine};box-shadow:0 0 18px ${t.jumpGlow}">${ICON_U(t.jumpIcon)}</div>
+    <div class="name" style="background:${t.nameBg};color:${t.nameFg}">${t.title}</div>`);
+}
+
+// ---------------------------------------------------------------------------
+// A. Sky Islands: bright day, floating islands with rocky roots over a sea of clouds.
+function island(x1, x2, top, depth, id) {
+  const w = x2 - x1, mid = (x1 + x2) / 2;
+  let under = `M${x1} ${top + 10} `;
+  const steps = Math.max(4, Math.round(w / 40));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps, x = x1 + t * w;
+    const d = Math.sin(t * Math.PI) * depth * (0.75 + rnd() * 0.35);
+    under += `L${x.toFixed(1)} ${(top + 14 + d).toFixed(1)} `;
+  }
+  under += `L${x2} ${top + 10} Z`;
+  let grass = `M${x1 - 4} ${top + 2} Q${x1 - 6} ${top - 10} ${x1 + 8} ${top - 9} L${x2 - 8} ${top - 9} Q${x2 + 6} ${top - 10} ${x2 + 4} ${top + 2} `;
+  const bumps = Math.round(w / 22);
+  for (let i = bumps; i >= 0; i--) { const x = x1 + (i / bumps) * w; grass += `Q${(x + w / bumps / 2).toFixed(1)} ${top + 22} ${x.toFixed(1)} ${top + 12} `; }
+  grass += 'Z';
+  let strata = '';
+  for (let k = 1; k <= 3; k++) strata += `<path d="M${x1 + 10} ${top + 16 + k * depth * 0.18} Q${mid} ${top + 26 + k * depth * 0.22} ${x2 - 10} ${top + 16 + k * depth * 0.18}" stroke="#5c3d26" stroke-width="2" fill="none" opacity="0.35"/>`;
+  let roots = '';
+  for (let i = 0; i < 3; i++) { const rx = x1 + w * (0.25 + i * 0.25); roots += `<path d="M${rx} ${top + depth * 0.7} q-6 18 2 34 q4 10 -2 20" stroke="#4e9c3c" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85"/>`; }
+  return `<g filter="url(#isl-shadow)"><path d="${under}" fill="url(#rock)" stroke="#3b2618" stroke-width="2.5" stroke-linejoin="round"/>${strata}${roots}
+    <path d="${grass}" fill="url(#grassA)" stroke="#1f5a2a" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M${x1 + 6} ${top - 5} L${x2 - 6} ${top - 5}" stroke="#e6ffb8" stroke-width="3" stroke-linecap="round" opacity="0.8"/></g>`;
+}
+function islands() {
+  const st = document.getElementById('d-islands');
+  const clouds = Array.from({ length: 14 }, (_, i) => `<circle cx="${i * 66 - 10}" cy="${372 + (i % 3) * 8}" r="${46 + (i % 4) * 9}" fill="url(#cloudsea)"/>`).join('');
+  const far = [[110, 150, 60, 30], [610, 120, 80, 40], [760, 175, 50, 24]].map(([x, y, w, d]) => `<path d="M${x - w} ${y} L${x + w} ${y} L${x + w * 0.4} ${y + d} L${x} ${y + d * 1.5} L${x - w * 0.5} ${y + d} Z" fill="#bfe6ff"/><path d="M${x - w} ${y} Q${x} ${y - 10} ${x + w} ${y}" fill="#d8f2e6"/>`).join('');
+  st.innerHTML = `<svg class="world" viewBox="0 0 844 390"><defs>
+      <linearGradient id="skyA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fb4ff"/><stop offset="0.6" stop-color="#9fe0ff"/><stop offset="1" stop-color="#e9fbff"/></linearGradient>
+      <radialGradient id="sunA" cx="0.18" cy="0.12" r="0.5"><stop offset="0" stop-color="#fffbe0"/><stop offset="0.2" stop-color="#fff3b8" stop-opacity="0.8"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c79565"/><stop offset="0.5" stop-color="#9a6a42"/><stop offset="1" stop-color="#5e3f28"/></linearGradient>
+      <linearGradient id="grassA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6f27a"/><stop offset="0.5" stop-color="#5fc24c"/><stop offset="1" stop-color="#2f8a3a"/></linearGradient>
+      <radialGradient id="cloudsea" cx="0.4" cy="0.3" r="0.7"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d4ecff"/></radialGradient>
+      <linearGradient id="fall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8fbff"/><stop offset="1" stop-color="#9ee3ff" stop-opacity="0.2"/></linearGradient>
+      <filter id="isl-shadow" x="-10%" y="-10%" width="120%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#2a5f8a" flood-opacity="0.35"/></filter>
+    </defs>
+    <rect width="844" height="390" fill="url(#skyA)"/><rect width="844" height="390" fill="url(#sunA)"/>
+    <g opacity="0.9">${far}</g>
+    <g opacity="0.85"><ellipse cx="200" cy="60" rx="70" ry="18" fill="#fff"/><ellipse cx="560" cy="44" rx="90" ry="20" fill="#fff" opacity="0.8"/></g>
+    ${clouds}
+    <rect x="292" y="262" width="22" height="140" fill="url(#fall)" opacity="0.85"/>
+    ${island(-30, 300, 270, 90, 1)}${island(445, 690, 270, 80, 2)}${island(330, 430, 190, 34, 3)}${island(700, 900, 228, 70, 4)}
+    </svg>`;
+  actors(st, 270, {
+    coins: [[352, 160], [380, 152], [408, 160], [530, 236], [560, 236]], box: [800, 182], enemy: [610, 261], fire: [330, 214],
+    runners: [['hopper', 215, 261, 'YOU', -6], ['foxy', 380, 182, 'Dana', 4], ['frogo', 135, 261, 'Zippy', 0], ['mimi', 60, 261, 'Momo', 0]],
+  });
+  hud(st, { title: 'A · SKY ISLANDS', glass: 'rgba(22,26,56,0.62)', line: 'rgba(255,255,255,0.25)', accent: '#ffd23f', muted: '#c6cdee',
+    rankGrad: 'linear-gradient(#fff6c2,#ffd23f 55%,#ff9a1a)', bar: 'linear-gradient(90deg,#ffe07a,#ffb21f)', pipLine: '#161a33', pipOff: 'rgba(22,26,56,0.6)',
+    orbGlow: 'rgba(255,200,60,0.5)', padBg: 'rgba(22,26,56,0.45)', padLine: 'rgba(255,255,255,0.6)',
+    powerBg: 'radial-gradient(circle at 35% 30%,rgba(200,160,255,0.95),rgba(120,60,230,0.9))', powerLine: 'rgba(255,220,255,0.85)', powerGlow: 'rgba(160,100,255,0.6)',
+    jumpBg: 'radial-gradient(circle at 35% 30%,rgba(255,240,170,0.97),rgba(255,190,40,0.92))', jumpLine: 'rgba(255,250,210,0.95)', jumpGlow: 'rgba(255,200,60,0.5)', jumpIcon: '#5a3200',
+    nameBg: '#ffffff', nameFg: '#161a33' });
+}
+
+// ---------------------------------------------------------------------------
+// B. Neon Night: a glowing city at night, dark blocks with neon edges.
+function neon() {
+  const st = document.getElementById('d-neon');
+  let stars = '';
+  for (let i = 0; i < 70; i++) stars += `<circle cx="${(rnd() * 844).toFixed(0)}" cy="${(rnd() * 200).toFixed(0)}" r="${(0.6 + rnd() * 1.4).toFixed(1)}" fill="#fff" opacity="${(0.4 + rnd() * 0.6).toFixed(2)}"/>`;
+  let city = '';
+  for (let x = -10, i = 0; x < 860; i++) {
+    const w = 34 + Math.round(rnd() * 40), h = 60 + Math.round(rnd() * 120);
+    city += `<rect x="${x}" y="${300 - h}" width="${w}" height="${h + 20}" fill="${i % 2 ? '#1c1745' : '#221a52'}"/>`;
+    for (let wy = 300 - h + 10; wy < 290; wy += 14) for (let wx = x + 6; wx < x + w - 8; wx += 10) if (rnd() > 0.55) city += `<rect x="${wx}" y="${wy}" width="5" height="7" fill="${rnd() > 0.5 ? '#ffd86b' : '#7ff7ff'}" opacity="${(0.5 + rnd() * 0.5).toFixed(2)}"/>`;
+    x += w + 4;
+  }
+  const block = (x1, x2, top, edge) => {
+    let g = `<rect x="${x1}" y="${top}" width="${x2 - x1}" height="${390 - top}" fill="url(#blockN)"/>`;
+    for (let x = x1; x < x2; x += 42) g += `<path d="M${x} ${top} V390" stroke="#3a3f7a" stroke-width="1.5" opacity="0.7"/>`;
+    for (let y = top + 42; y < 390; y += 42) g += `<path d="M${x1} ${y} H${x2}" stroke="#3a3f7a" stroke-width="1.5" opacity="0.7"/>`;
+    g += `<rect x="${x1}" y="${top - 3}" width="${x2 - x1}" height="7" rx="3.5" fill="${edge}" filter="url(#glowN)"/><rect x="${x1}" y="${top - 2}" width="${x2 - x1}" height="3" rx="1.5" fill="#ffffff"/>`;
+    return g;
+  };
+  st.innerHTML = `<svg class="world" viewBox="0 0 844 390"><defs>
+      <linearGradient id="skyN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080726"/><stop offset="0.55" stop-color="#2a1660"/><stop offset="1" stop-color="#7a2e8f"/></linearGradient>
+      <radialGradient id="moonN" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6d8"/><stop offset="0.45" stop-color="#ffe9a8"/><stop offset="0.5" stop-color="#ffe0a0" stop-opacity="0.35"/><stop offset="1" stop-color="#ff9ad8" stop-opacity="0"/></radialGradient>
+      <linearGradient id="blockN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b2f66"/><stop offset="1" stop-color="#14163a"/></linearGradient>
+      <filter id="glowN" x="-20%" y="-300%" width="140%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+      <linearGradient id="fogN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff4fd8" stop-opacity="0"/><stop offset="1" stop-color="#ff4fd8" stop-opacity="0.35"/></linearGradient>
+    </defs>
+    <rect width="844" height="390" fill="url(#skyN)"/>${stars}
+    <circle cx="640" cy="80" r="80" fill="url(#moonN)"/>
+    <g opacity="0.95">${city}</g><rect y="200" width="844" height="110" fill="url(#fogN)"/>
+    ${block(-10, 316, 270, '#3ff0ff')}${block(400, 660, 270, '#3ff0ff')}${block(660, 860, 228, '#ff4fd8')}
+    <rect x="330" y="186" width="110" height="14" rx="4" fill="#1b1d48"/><rect x="330" y="183" width="110" height="6" rx="3" fill="#ff4fd8" filter="url(#glowN)"/><rect x="330" y="184" width="110" height="3" rx="1.5" fill="#fff"/>
+    <rect x="316" y="270" width="84" height="120" fill="#ff4fd8" opacity="0.07"/>
+    </svg>`;
+  actors(st, 270, {
+    coins: [[352, 160], [380, 152], [408, 160], [500, 236], [530, 236]], box: [770, 182], enemy: [600, 267], fire: [330, 214],
+    coinGlow: 12, coinGlowColor: 'rgba(255,220,90,1)',
+    glow: 'drop-shadow(0 0 6px rgba(120,240,255,0.55))', shadow: 'rgba(60,240,255,0.45)', tagExtra: 'box-shadow:0 0 10px rgba(255,255,255,0.35)',
+    runners: [['hopper', 215, 267, 'YOU', -6], ['foxy', 380, 182, 'Dana', 4], ['frogo', 135, 267, 'Zippy', 0], ['mimi', 60, 267, 'Momo', 0]],
+  });
+  hud(st, { title: 'B · NEON NIGHT', glass: 'rgba(12,10,40,0.55)', line: 'rgba(63,240,255,0.6)', accent: '#3ff0ff', muted: '#9ad8ff', glow: '0 0 14px rgba(63,240,255,0.35)',
+    rankGrad: 'linear-gradient(#ffffff,#7ff7ff 50%,#ff4fd8)', bar: 'linear-gradient(90deg,#3ff0ff,#ff4fd8)', barGlow: '0 0 8px rgba(63,240,255,0.9)', pipLine: '#3ff0ff', pipOff: 'rgba(12,10,40,0.7)',
+    orbGlow: 'rgba(63,240,255,0.7)', padBg: 'rgba(12,10,40,0.45)', padLine: 'rgba(63,240,255,0.8)',
+    powerBg: 'radial-gradient(circle at 35% 30%,rgba(255,120,230,0.9),rgba(140,30,160,0.9))', powerLine: '#ff9be9', powerGlow: 'rgba(255,79,216,0.8)',
+    jumpBg: 'radial-gradient(circle at 35% 30%,rgba(140,255,255,0.95),rgba(20,170,220,0.9))', jumpLine: '#b8ffff', jumpGlow: 'rgba(63,240,255,0.8)', jumpIcon: '#06243a',
+    nameBg: '#3ff0ff', nameFg: '#06243a' });
+}
+
+// ---------------------------------------------------------------------------
+// C. Candy Kingdom: pastel sky, cake-layer ground with frosting, lollipop trees.
+function candy() {
+  const st = document.getElementById('d-candy');
+  const cake = (x1, x2, top) => {
+    const w = x2 - x1;
+    let drips = `M${x1} ${top - 6} L${x2} ${top - 6} L${x2} ${top + 10} `;
+    for (let x = x2; x > x1; x -= 26) { const d = 10 + ((x * 7) % 16); drips += `Q${x - 6} ${top + 10} ${x - 8} ${top + d} Q${x - 13} ${top + d + 7} ${x - 18} ${top + d} Q${x - 20} ${top + 10} ${x - 26} ${top + 10} `; }
+    drips += 'Z';
+    let sprinkles = '';
+    for (let i = 0; i < w / 14; i++) { const sx = x1 + rnd() * w, sy = top - 3 + rnd() * 8; sprinkles += `<rect x="${sx.toFixed(0)}" y="${sy.toFixed(0)}" width="7" height="2.6" rx="1.3" fill="${['#ff5c8a', '#5cd6ff', '#ffe14a', '#8a6bff', '#5ce08a'][i % 5]}" transform="rotate(${(rnd() * 180).toFixed(0)} ${sx.toFixed(0)} ${sy.toFixed(0)})"/>`; }
+    return `<rect x="${x1}" y="${top}" width="${w}" height="${390 - top}" fill="url(#sponge)" stroke="#7a3f2a" stroke-width="2.5"/>
+      <rect x="${x1}" y="${top + 40}" width="${w}" height="12" fill="#fff4e6"/><rect x="${x1}" y="${top + 52}" width="${w}" height="10" fill="#ff5c8a"/>
+      <rect x="${x1}" y="${top + 92}" width="${w}" height="10" fill="#fff4e6"/>
+      <path d="${drips}" fill="url(#frost)" stroke="#d94f84" stroke-width="2.2" stroke-linejoin="round"/>
+      <path d="M${x1 + 6} ${top - 2} H${x2 - 6}" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.85"/>${sprinkles}`;
+  };
+  const lolly = (x, y, r, c1, c2, s) => `<path d="M${x} ${y + r} V${y + r + s}" stroke="#fff" stroke-width="5"/><path d="M${x} ${y + r} V${y + r + s}" stroke="#ff8fb3" stroke-width="5" stroke-dasharray="6 6"/>
+      <circle cx="${x}" cy="${y}" r="${r}" fill="${c1}" stroke="#7a3f6a" stroke-width="2.5"/><path d="M${x} ${y} m-${r * 0.6} 0 a${r * 0.6} ${r * 0.6} 0 1 1 ${r * 1.2} 0 a${r * 0.4} ${r * 0.4} 0 1 1 -${r * 0.8} 0 a${r * 0.2} ${r * 0.2} 0 1 1 ${r * 0.4} 0" fill="none" stroke="${c2}" stroke-width="${r * 0.18}"/>
+      <ellipse cx="${x - r * 0.35}" cy="${y - r * 0.4}" rx="${r * 0.3}" ry="${r * 0.18}" fill="#fff" opacity="0.8"/>`;
+  st.innerHTML = `<svg class="world" viewBox="0 0 844 390"><defs>
+      <linearGradient id="skyC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd8ff"/><stop offset="0.55" stop-color="#ffd1ec"/><stop offset="1" stop-color="#ffe9c9"/></linearGradient>
+      <linearGradient id="sponge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8a868"/><stop offset="1" stop-color="#b9733e"/></linearGradient>
+      <linearGradient id="frost" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe0ef"/><stop offset="1" stop-color="#ff9ccb"/></linearGradient>
+      <radialGradient id="cotton" cx="0.4" cy="0.35" r="0.7"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffc2e4"/></radialGradient>
+      <linearGradient id="wafer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2a8"/><stop offset="1" stop-color="#d9973e"/></linearGradient>
+    </defs>
+    <rect width="844" height="390" fill="url(#skyC)"/>
+    <g fill="url(#cotton)" opacity="0.95"><circle cx="120" cy="70" r="30"/><circle cx="155" cy="60" r="36"/><circle cx="195" cy="74" r="26"/><circle cx="600" cy="50" r="28"/><circle cx="640" cy="44" r="34"/><circle cx="676" cy="58" r="24"/></g>
+    <path d="M0 250 Q120 160 260 230 Q380 150 520 220 Q650 140 844 210 V390 H0Z" fill="#ffc2e0" opacity="0.8"/>
+    <path d="M0 270 Q160 210 300 255 Q450 200 600 250 Q730 210 844 240 V390 H0Z" fill="#ffd9a8" opacity="0.9"/>
+    ${lolly(90, 178, 22, '#ff6b9a', '#fff', 70)}${lolly(470, 168, 26, '#6bd6ff', '#fff', 80)}${lolly(735, 150, 20, '#ffe14a', '#ff6b9a', 60)}
+    ${cake(-10, 316, 270)}${cake(400, 660, 270)}${cake(660, 860, 228)}
+    <rect x="330" y="182" width="110" height="16" rx="5" fill="url(#wafer)" stroke="#8a5420" stroke-width="2.2"/>
+    ${[0, 1, 2, 3, 4].map((i) => `<path d="M${342 + i * 22} 184 V196" stroke="#b97a30" stroke-width="2"/>`).join('')}
+    </svg>`;
+  actors(st, 270, {
+    coins: [[352, 160], [380, 152], [408, 160], [500, 236], [530, 236]], box: [770, 182], enemy: [600, 266], fire: [330, 214], shadow: 'rgba(120,40,60,0.35)',
+    runners: [['hopper', 215, 266, 'YOU', -6], ['foxy', 380, 182, 'Dana', 4], ['frogo', 135, 266, 'Zippy', 0], ['mimi', 60, 266, 'Momo', 0]],
+  });
+  hud(st, { title: 'C · CANDY KINGDOM', glass: 'rgba(122,40,96,0.55)', line: 'rgba(255,255,255,0.5)', accent: '#ffffff', muted: '#ffd6ec',
+    rankGrad: 'linear-gradient(#ffffff,#ffd1ec 45%,#ff5c8a)', bar: 'linear-gradient(90deg,#ff9ccb,#ff5c8a)', pipLine: '#7a2860', pipOff: 'rgba(122,40,96,0.5)',
+    orbGlow: 'rgba(255,120,190,0.6)', padBg: 'rgba(122,40,96,0.4)', padLine: 'rgba(255,255,255,0.75)',
+    powerBg: 'radial-gradient(circle at 35% 30%,rgba(150,230,255,0.95),rgba(40,150,230,0.9))', powerLine: '#e6f9ff', powerGlow: 'rgba(90,200,255,0.6)',
+    jumpBg: 'radial-gradient(circle at 35% 30%,rgba(255,230,245,0.97),rgba(255,92,138,0.92))', jumpLine: '#ffe6f2', jumpGlow: 'rgba(255,92,138,0.55)', jumpIcon: '#5a0f2e',
+    nameBg: '#ff5c8a', nameFg: '#fff' });
+}
+
+islands(); neon(); candy();
+</script>
+</body>
+</html>
