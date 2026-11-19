@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Ground surface tile, drawn at 2x the in-game size (32x32). Left and right edges match,
+       so the tile repeats along a row without seams. -->
+  <defs>
+    <linearGradient id="dirt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a4b2a"/>
+      <stop offset="0.35" stop-color="#8f5d37"/>
+      <stop offset="1" stop-color="#8a5a36"/>
+    </linearGradient>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a8ec74"/>
+      <stop offset="0.35" stop-color="#5cc04f"/>
+      <stop offset="1" stop-color="#2f7a3a"/>
+    </linearGradient>
+    <radialGradient id="pebble" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#d8a877"/>
+      <stop offset="0.6" stop-color="#a87445"/>
+      <stop offset="1" stop-color="#6e4428"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="64" height="64" fill="url(#dirt)"/>
+  <!-- shade just under the grass lip -->
+  <rect y="16" width="64" height="6" fill="#4d2f1b" opacity="0.35"/>
+
+  <!-- pebbles, kept away from the tile edges -->
+  <g stroke="#4d2f1b" stroke-width="1">
+    <ellipse cx="14" cy="33" rx="4" ry="3" fill="url(#pebble)"/>
+    <ellipse cx="44" cy="40" rx="5" ry="3.5" fill="url(#pebble)"/>
+    <ellipse cx="25" cy="52" rx="3.5" ry="2.6" fill="url(#pebble)"/>
+    <ellipse cx="54" cy="56" rx="3" ry="2.2" fill="url(#pebble)"/>
+    <ellipse cx="7" cy="50" rx="2.4" ry="1.8" fill="url(#pebble)"/>
+  </g>
+  <g fill="#ffffff" opacity="0.45">
+    <ellipse cx="12.8" cy="31.8" rx="1.4" ry="0.9"/>
+    <ellipse cx="42.5" cy="38.7" rx="1.7" ry="1"/>
+    <ellipse cx="24" cy="51.2" rx="1.2" ry="0.7"/>
+  </g>
+
+  <!-- grass cap with rounded tufts along the bottom edge; starts and ends at the same height -->
+  <path d="M0 0 H64 V16
+           C 60 16, 59 21, 55 21  C 51 21, 51 17, 47 17
+           C 43 17, 42 22, 37 22  C 33 22, 33 17, 29 17
+           C 25 17, 24 21, 20 21  C 16 21, 16 17, 12 17
+           C 8 17, 7 21, 4 21     C 1.5 21, 1 16, 0 16 Z"
+        fill="url(#grass)"/>
+  <path d="M64 16
+           C 60 16, 59 21, 55 21  C 51 21, 51 17, 47 17
+           C 43 17, 42 22, 37 22  C 33 22, 33 17, 29 17
+           C 25 17, 24 21, 20 21  C 16 21, 16 17, 12 17
+           C 8 17, 7 21, 4 21     C 1.5 21, 1 16, 0 16"
+        fill="none" stroke="#1f5a2a" stroke-width="1.2"/>
+  <!-- glossy top edge -->
+  <rect y="0" width="64" height="3" fill="#d4ffa8" opacity="0.8"/>
+  <rect y="3" width="64" height="2" fill="#ffffff" opacity="0.18"/>
+  <!-- a few lighter blades -->
+  <g fill="#c6f597" opacity="0.7">
+    <ellipse cx="10" cy="8" rx="3" ry="1.2"/>
+    <ellipse cx="33" cy="10" rx="3.5" ry="1.2"/>
+    <ellipse cx="52" cy="7" rx="2.6" ry="1"/>
+  </g>
+</svg>
