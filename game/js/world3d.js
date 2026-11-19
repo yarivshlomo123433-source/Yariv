@@ -49,6 +49,15 @@ window.World3D = (function () {
     return mats.get(key);
   }
   const box = (w, h, d) => new T.BoxGeometry(w, h, d);
+  // Box with rounded edges (front profile extruded with a bevel), for soft, toy-like slabs.
+  function roundedSlab(w, h, d, r) {
+    r = Math.min(r, h / 2 - 0.01, w / 2 - 0.01);
+    const sh = new T.Shape(), x = -w / 2 + r, y = -h / 2 + r, iw = w - 2 * r, ih = h - 2 * r;
+    sh.moveTo(x, y); sh.lineTo(x + iw, y); sh.lineTo(x + iw, y + ih); sh.lineTo(x, y + ih); sh.lineTo(x, y);
+    const g = new T.ExtrudeGeometry(sh, { depth: d - 2 * r, bevelEnabled: true, bevelThickness: r, bevelSize: r, bevelSegments: 4, curveSegments: 8 });
+    g.translate(0, 0, -(d - 2 * r) / 2);
+    return g;
+  }
   function add(group, geo, material, x, y, z, sx = 1, sy = 1, sz = 1, shadow = true) {
     const m = new T.Mesh(geo, material);
     m.position.set(x, y, z);
@@ -239,7 +248,7 @@ window.World3D = (function () {
     return m;
   }
   // One island for a run of equal-height columns: grass cap on top, tapered rock below.
-  function island(group, th, x1, x2, y, r, deep = 3.6) {
+  function island(group, th, x1, x2, y, r, deep = 3.6, dropL = 0, dropR = 0) {
     const w = x2 - x1;
     const D = 2.6;
     const shape = new T.Shape();
@@ -249,12 +258,17 @@ window.World3D = (function () {
     for (let i = 0; i <= steps; i++) {
       const t = 1 - i / steps;
       const px = x1 + t * w;
-      const depth = (0.6 + Math.sin(t * Math.PI) * (deep - 0.6)) * (0.8 + r() * 0.35);
-      const inset = Math.min(w * 0.18, 0.8) * (1 - Math.sin(t * Math.PI));
+      // A side next to lower ground drops as a solid cliff to that ground, so a raised step
+      // looks like the wall it is in the physics instead of a floating rock.
+      const eL = Math.max(0.6, dropL), eR = Math.max(0.6, dropR);
+      const edge = eL * (1 - t) + eR * t;
+      const depth = Math.max(edge, (edge + Math.sin(t * Math.PI) * Math.max(0, deep - edge)) * (0.8 + r() * 0.35));
+      const side = t > 0.5 ? dropR : dropL;
+      const inset = side > 0 ? 0 : Math.min(w * 0.18, 0.8) * (1 - Math.sin(t * Math.PI));
       shape.lineTo(px + (t > 0.5 ? -inset : inset) * 0.6, y - 0.25 - depth);
     }
     shape.lineTo(x1, y - 0.25);
-    const rockGeo = new T.ExtrudeGeometry(shape, { depth: D, bevelEnabled: true, bevelThickness: 0.25, bevelSize: 0.22, bevelSegments: 2, steps: 1 });
+    const rockGeo = new T.ExtrudeGeometry(shape, { depth: D, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.32, bevelSegments: 5, steps: 1, curveSegments: 16 });
     rockGeo.translate(0, 0, -D / 2);
     const rock = new T.Mesh(rockGeo, rockMaterial(th));
     rock.castShadow = true; rock.receiveShadow = true;
@@ -266,7 +280,7 @@ window.World3D = (function () {
       st.rotation.set(r() * 3, r() * 3, r() * 3);
     }
     // Grass (or snow / basalt) cap: a slab with a soft rounded front edge that overhangs.
-    add(group, box(w + 0.3, 0.3, D + 0.5), topMaterial(th), x1 + w / 2, y - 0.15, 0);
+    add(group, roundedSlab(w + 0.3, 0.34, D + 0.5, 0.15), topMaterial(th), x1 + w / 2, y - 0.17, 0);
     const edge = add(group, capGeo, mat(th.top, { rough: 0.75 }), x1 + w / 2, y - 0.12, D / 2 + 0.22, 1, w + 0.1, 1);
     edge.rotation.z = Math.PI / 2;
     edge.scale.set(1.15, (w + 0.1) / 1.4, 1);
@@ -312,7 +326,7 @@ window.World3D = (function () {
       return;
     }
     add(group, GEO.cyl, mat(th.trunk), x, y + 0.5 * s, z, 0.13 * s, 1.0 * s, 0.13 * s);
-    const c1 = mat(th.tree, { flat: true, rough: 0.85 }), c2 = mat(th.tree2, { flat: true, rough: 0.85 });
+    const c1 = mat(th.tree, { rough: 0.85 }), c2 = mat(th.tree2, { rough: 0.85 });
     add(group, GEO.sphereLo, c1, x, y + 1.35 * s, z, 0.85 * s, 0.75 * s, 0.85 * s);
     add(group, GEO.sphereLo, c2, x - 0.35 * s, y + 1.65 * s, z + 0.2 * s, 0.55 * s, 0.5 * s, 0.55 * s);
     add(group, GEO.sphereLo, c2, x + 0.4 * s, y + 1.55 * s, z + 0.1 * s, 0.5 * s, 0.45 * s, 0.5 * s);
@@ -476,7 +490,11 @@ window.World3D = (function () {
     for (let c = 1; c <= cols.length; c++) {
       if (c === cols.length || surf(c) !== surf(start)) {
         const y = surf(start);
-        if (y != null) island(g, th, start, c, y, r, 3 + (c - start) * 0.15);
+        if (y != null) {
+          const yl = surf(start - 1), yr = surf(c);
+          const dl = yl != null && yl < y ? y - yl + 0.9 : 0, dr = yr != null && yr < y ? y - yr + 0.9 : 0;
+          island(g, th, start, c, y, r, 3 + (c - start) * 0.15, dl, dr);
+        }
         start = c;
       }
     }

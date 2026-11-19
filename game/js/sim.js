@@ -4,7 +4,7 @@
 window.Sim = (function () {
   const M = {
     RUN: 6.9, GRAV: 43.75, JUMP: 17.5, FALL_EXTRA: 28, MAX_FALL: 28,
-    APEX_T: 0.35, APEX_G: 0.5, CUT: 0.5, COYOTE: 0.1, BUFFER: 0.12,
+    APEX_T: 0.35, APEX_G: 0.5, CUT: 0.6, MIN_HOLD: 0.15, COYOTE: 0.15, BUFFER: 0.16, STEP_UP: 0.55,
     ACC: 14, DEC: 20, TURN: 26, AIR_ACC: 8, AIR_DEC: 5,
     HW: 0.27, H: 0.95, STOMP: 13,
   };
@@ -27,7 +27,7 @@ window.Sim = (function () {
       Object.assign(this, {
         key: opts.key, name: opts.name, charId: opts.charId, bot: !!opts.bot, me: !!opts.me,
         x: opts.x, y: opts.y, vx: 0, vy: 0, onGround: false, facing: 1,
-        jumps: 0, lastGround: -1e9, lastPress: -1e9, wasGround: false, fallSpeed: 0,
+        jumps: 0, lastGround: -1e9, lastPress: -1e9, jumpT: -1e9, cutPending: false, wasGround: false, fallSpeed: 0,
         stunUntil: -1e9, slowUntil: -1e9, frozenUntil: -1e9, boostUntil: -1e9, shieldUntil: -1e9, invulnUntil: -1e9,
         finished: false, ft: 0, respawnAt: 0, safeX: opts.x, safeY: opts.y,
         powers: { ice: 0, slime: 0, boost: 0, shield: 0 }, powerCooldown: 0, coins: 0,
@@ -82,9 +82,14 @@ window.Sim = (function () {
         else this.lastPress = t;
       } else if (active && this.onGround && this.vy <= 0 && t - this.lastPress <= M.BUFFER) {
         this.jumps = 1; this.jump(false);
-        if (!inp.jumpHeld) this.vy *= M.CUT;
+        if (!inp.jumpHeld) this.cutPending = true;
       }
-      if (inp.jumpReleased && this.vy > 0) this.vy *= M.CUT;
+      // Variable jump height. A release only shortens the jump after MIN_HOLD, so a quick tap
+      // on a phone (press and release inside one frame) still gives a useful jump.
+      this.jumpT = this.jumpT === -1 ? t : this.jumpT;
+      if (inp.jumpReleased && this.vy > 0) this.cutPending = true;
+      if (this.cutPending && t - this.jumpT >= M.MIN_HOLD) { if (this.vy > 0) this.vy *= M.CUT; this.cutPending = false; }
+      if (this.vy <= 0) this.cutPending = false;
       const held = active && inp.jumpHeld;
       let g = M.GRAV;
       if (this.vy < 0 && !(held && -this.vy < S.jump * M.APEX_T)) g += M.FALL_EXTRA;
@@ -96,6 +101,7 @@ window.Sim = (function () {
 
     jump(air) {
       this.vy = this.stats.jump;
+      this.jumpT = -1; this.cutPending = false;   // stamped with the step time in step()
       this.lastPress = -1e9;
       this.onGround = false;
       this.events.push(air ? 'double' : 'jump');
@@ -110,8 +116,13 @@ window.Sim = (function () {
         const c = Math.floor(edge);
         const s = world.surf(c);
         if (s != null && s > this.y + 0.04) {
-          nx = this.vx > 0 ? c - hw - 0.001 : c + 1 + hw + 0.001;
-          this.vx = 0;
+          if (s - this.y <= M.STEP_UP && (this.onGround || this.vy > -6)) {
+            // Corner correction: a jump that ends just below the top still makes it.
+            this.y = s; this.vy = Math.max(0, this.vy); this.onGround = true;
+          } else {
+            nx = this.vx > 0 ? c - hw - 0.001 : c + 1 + hw + 0.001;
+            this.vx = 0;
+          }
         }
       }
       this.x = Math.max(0.3, Math.min(world.width - 0.3, nx));
