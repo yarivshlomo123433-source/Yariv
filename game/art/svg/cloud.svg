@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 84" width="192" height="84">
+  <!-- Background cloud, 2x its in-game size (96x42). No outline: it sits behind the action. -->
+  <defs>
+    <linearGradient id="c" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#eef7ff"/>
+      <stop offset="1" stop-color="#cfe6f8"/>
+    </linearGradient>
+  </defs>
+  <path d="M30 76 C 10 76, 6 56, 22 50 C 18 30, 44 22, 56 34 C 62 12, 98 6, 110 28 C 122 16, 150 22, 150 42 C 172 40, 184 60, 168 74 C 166 76, 160 76, 156 76 Z" fill="url(#c)"/>
+  <path d="M40 46 C 44 38, 54 36, 60 42" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+</svg>

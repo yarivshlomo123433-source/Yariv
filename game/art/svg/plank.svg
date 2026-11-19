@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 26" width="64" height="26">
+  <!-- One-way wooden platform segment, 2x the in-game size (32x13). Ends match so segments join. -->
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f0b979"/>
+      <stop offset="0.45" stop-color="#c98a4b"/>
+      <stop offset="1" stop-color="#8a5529"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="2" width="64" height="18" fill="url(#wood)"/>
+  <rect x="0" y="2" width="64" height="2.5" fill="#ffe0b3" opacity="0.9"/>
+  <path d="M0 2 H64 M0 20 H64" stroke="#4d2f1b" stroke-width="2"/>
+  <path d="M31 4 V 19" stroke="#7a4a24" stroke-width="2"/>
+  <circle cx="8" cy="11" r="1.6" fill="#5a3825"/>
+  <circle cx="54" cy="11" r="1.6" fill="#5a3825"/>
+  <!-- soft shadow under the plank -->
+  <rect x="0" y="21" width="64" height="4" fill="#1b1f3b" opacity="0.18"/>
+</svg>

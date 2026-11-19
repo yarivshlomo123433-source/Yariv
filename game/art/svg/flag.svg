@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 128" width="64" height="128">
+  <!-- Finish flag, 2x the in-game size (32x64). Checkered banner on a glossy pole. -->
+  <defs>
+    <linearGradient id="pole" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#cfd8e6"/>
+      <stop offset="1" stop-color="#7c8aa3"/>
+    </linearGradient>
+    <radialGradient id="knob" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#fff3b0"/>
+      <stop offset="1" stop-color="#d99a14"/>
+    </radialGradient>
+    <pattern id="check" width="10" height="10" patternUnits="userSpaceOnUse">
+      <rect width="10" height="10" fill="#ffffff"/>
+      <rect width="5" height="5" fill="#1b1f3b"/>
+      <rect x="5" y="5" width="5" height="5" fill="#1b1f3b"/>
+    </pattern>
+    <linearGradient id="shade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect x="9" y="8" width="7" height="114" rx="3" fill="url(#pole)" stroke="#1b1f3b" stroke-width="2"/>
+  <path d="M16 14 C 30 10, 42 20, 60 14 L 60 46 C 42 52, 30 42, 16 46 Z" fill="url(#check)" stroke="#1b1f3b" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M16 14 C 30 10, 42 20, 60 14 L 60 46 C 42 52, 30 42, 16 46 Z" fill="url(#shade)"/>
+  <circle cx="12.5" cy="8" r="6" fill="url(#knob)" stroke="#1b1f3b" stroke-width="2"/>
+  <ellipse cx="10.5" cy="6" rx="2" ry="1.3" fill="#ffffff"/>
+  <rect x="2" y="118" width="22" height="9" rx="3" fill="#8a5a36" stroke="#1b1f3b" stroke-width="2"/>
+</svg>

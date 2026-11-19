@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <!-- Coin, 2x the in-game size (18x18). -->
+  <defs>
+    <radialGradient id="gold" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#fff3b0"/>
+      <stop offset="0.45" stop-color="#ffcc33"/>
+      <stop offset="1" stop-color="#c47f0a"/>
+    </radialGradient>
+    <radialGradient id="inner" cx="0.6" cy="0.7" r="0.8">
+      <stop offset="0" stop-color="#ffe066"/>
+      <stop offset="1" stop-color="#d99a14"/>
+    </radialGradient>
+  </defs>
+  <circle cx="18" cy="18" r="15.5" fill="url(#gold)" stroke="#7a4a06" stroke-width="2"/>
+  <circle cx="18" cy="18" r="10.5" fill="url(#inner)" stroke="#b9780c" stroke-width="1.5"/>
+  <path d="M18 11.5 L 20 16 L 24.6 16.4 L 21 19.4 L 22.2 24 L 18 21.4 L 13.8 24 L 15 19.4 L 11.4 16.4 L 16 16 Z" fill="#fff1a6" stroke="#b9780c" stroke-width="1" stroke-linejoin="round"/>
+  <ellipse cx="12" cy="10" rx="4.5" ry="2.6" transform="rotate(-35 12 10)" fill="#ffffff" opacity="0.85"/>
+</svg>
