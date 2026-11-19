@@ -1,7 +1,9 @@
 # Coin Hopper
 
-An online platform race for up to 4 friends, built with Phaser 4.2.1. Every race runs on a
-newly generated course, and power-ups on the floor let you slow the others down.
+An online platform race for up to 4 players, built with Phaser 4.2.1. Bots fill any empty
+spots. A match is 3 races on newly generated courses, scored 10/6/3/1, ending on a podium.
+Power-ups on the floor let you slow the others down. The game fills the whole screen and
+plays on phones in landscape with on-screen buttons.
 
 ## Play
 
@@ -13,8 +15,11 @@ Without claude.ai, only solo races are available.
 
 ## How it works
 
-- **Rooms:** one player creates a room and shares the 4-letter code; up to 4 can join.
-  The first player in the room is the host and starts each race.
+- **Rooms:** one player creates a room and sends the invite link (or the 4-letter code);
+  up to 4 can join. The first player in the room is the host: they start each race, run the
+  bots and decide when a race is over (everyone finished, or 20 s after the first finisher).
+- **Bots** (`runner.js`): run right, jump gaps, steps and walls (double jump when needed),
+  hop over enemies and use their powers.
 - **Courses:** `levelgen.js` builds a course from a seed. The host shares the seed, so every
   player gets the same course; every race uses a new seed.
 - **Sync:** `net.js` sends each player's position and actions through room presence. Each
@@ -33,7 +38,9 @@ Without claude.ai, only solo races are available.
 ## Files
 
 - `index.html`: page, menus and touch buttons
-- `main.js`: scenes, player, powers, enemies and the online race flow
+- `main.js`: menus, match flow, scenes (race, podium), powers, enemies and online sync
+- `runner.js`: the runner shared by player and bots, and the bot AI
+- `audio.js`: synthesized sound effects and music (Web Audio, no audio files)
 - `levelgen.js`: seeded course generator
 - `net.js`: wrapper around the artifact room capability
 - `art.js`: generated from `art/svg/*.svg` by `node art/build-art.js`
