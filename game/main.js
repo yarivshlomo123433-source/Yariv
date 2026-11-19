@@ -3,6 +3,9 @@
 // and runs straight from index.html.
 
 const TILE = 32;
+
+// Optional on-screen controls: a page can set these flags from touch buttons.
+window.touchInput = window.touchInput || { left: false, right: false, jump: false };
 const VIEW_W = 800;
 const VIEW_H = 448;
 
@@ -170,6 +173,7 @@ class PlayScene extends Phaser.Scene {
     this.trauma = 0;
     this.shakeTime = 0;
     this.spinning = false;
+    this.touchJumpWas = false;
   }
 
   create() {
@@ -440,7 +444,8 @@ class PlayScene extends Phaser.Scene {
 
     // Run: ease toward the target speed, frame-rate independent.
     const dt = Math.min(delta, 50) / 1000;
-    const dir = ((k.right.isDown || k.d.isDown) ? 1 : 0) - ((k.left.isDown || k.a.isDown) ? 1 : 0);
+    const touch = window.touchInput;
+    const dir = ((k.right.isDown || k.d.isDown || touch.right) ? 1 : 0) - ((k.left.isDown || k.a.isDown || touch.left) ? 1 : 0);
     const vx = body.velocity.x;
     let rate;
     if (dir === 0) rate = onGround ? GROUND_DECEL : AIR_DECEL;
@@ -452,9 +457,12 @@ class PlayScene extends Phaser.Scene {
     if (dir !== 0) this.player.setFlipX(dir < 0);
 
     // Jump, double jump, coyote time and jump buffering.
-    const pressed = JustDown(k.up) | JustDown(k.w) | JustDown(k.space);
-    const released = JustUp(k.up) | JustUp(k.w) | JustUp(k.space);
-    const held = k.up.isDown || k.w.isDown || k.space.isDown;
+    const touchPressed = touch.jump && !this.touchJumpWas;
+    const touchReleased = !touch.jump && this.touchJumpWas;
+    this.touchJumpWas = touch.jump;
+    const pressed = JustDown(k.up) | JustDown(k.w) | JustDown(k.space) | touchPressed;
+    const released = JustUp(k.up) | JustUp(k.w) | JustUp(k.space) | touchReleased;
+    const held = k.up.isDown || k.w.isDown || k.space.isDown || touch.jump;
     if (pressed) {
       if (this.jumpsUsed === 0 && time - this.lastGround <= COYOTE_MS) {
         this.jumpsUsed = 1;
