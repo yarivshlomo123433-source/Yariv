@@ -30,7 +30,7 @@ function boardHtml() {
 
     <div class="lab" style="left:40px;top:118px">HERO (enlarged)</div>
     <div class="card" style="left:40px;top:142px;width:260px;height:340px;background:${SKY}">
-      <img src="${uri('player')}" style="position:absolute;left:34px;top:22px;width:192px;height:256px">
+      <img src="${uri('player')}" style="position:absolute;left:18px;top:22px;width:224px;height:256px">
       <div style="position:absolute;left:60px;top:282px;width:140px;height:18px;border-radius:50%;background:radial-gradient(#0003,#0000 70%)"></div>
     </div>
 
@@ -47,14 +47,14 @@ function boardHtml() {
     <div class="lab" style="left:700px;top:118px">IN GAME (actual size)</div>
     <div class="card" style="left:700px;top:142px;width:460px;height:268px;background:${SKY}">
       ${tilesRow(15, 'grass', 204)}${tilesRow(15, 'dirt', 236)}${step}
-      <img src="${uri('player')}" style="position:absolute;left:120px;top:172px;width:24px;height:32px">
+      <img src="${uri('player')}" style="position:absolute;left:120px;top:172px;width:28px;height:32px">
     </div>
     <div class="lab" style="left:700px;top:424px">IN GAME, ZOOMED 2×</div>
     <div class="card" style="left:700px;top:448px;width:460px;height:200px;background:${SKY}">
       <div style="position:absolute;left:0;top:0;width:230px;height:100px;transform:scale(2);transform-origin:0 0">
         ${tilesRow(8, 'grass', 68)}
-        <img src="${uri('player')}" style="position:absolute;left:60px;top:36px;width:24px;height:32px">
-        <img src="${uri('player')}" style="position:absolute;left:150px;top:22px;width:24px;height:32px;transform:scaleX(-1) rotate(-8deg)">
+        <img src="${uri('player')}" style="position:absolute;left:60px;top:36px;width:28px;height:32px">
+        <img src="${uri('player')}" style="position:absolute;left:150px;top:22px;width:28px;height:32px;transform:scaleX(-1) rotate(-8deg)">
       </div>
     </div>
 
