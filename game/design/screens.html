@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Coin Hopper screens mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap">
+<style>
+  /* Premium UI mockups: six landscape phone screens, 844 x 390 each. Art comes from window.U (data URIs). */
+  :root {
+    --ink: #161a33;
+    --navy: #1d2347;
+    --glass: rgba(22, 26, 56, 0.72);
+    --glass-line: rgba(255, 255, 255, 0.16);
+    --gold-1: #fff6c2; --gold-2: #ffd23f; --gold-3: #e08a12;
+    --play-1: #8ff58a; --play-2: #2fc24d; --play-3: #148038;
+    --blue-1: #9ccfff; --blue-2: #3f86ea; --blue-3: #2350b0;
+    --purple-1: #d2b4ff; --purple-2: #8a55f0; --purple-3: #5428b0;
+    --display: "Lilita One", "Trebuchet MS", sans-serif;
+    --body: "Nunito", system-ui, sans-serif;
+  }
+  body { margin: 0; background: #0d1024; font-family: var(--body); color: #fff; }
+  .stage { position: relative; width: 844px; height: 390px; overflow: hidden; }
+
+  /* ---- World ---- */
+  .sky { position: absolute; inset: 0; background: linear-gradient(170deg, #3f8fe0 0%, #79c3f2 45%, #ffd9a8 82%, #ffb37a 100%); }
+  .sunglow { position: absolute; width: 620px; height: 620px; right: -160px; top: -60px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,200,0.9) 0%, rgba(255,214,150,0.45) 25%, rgba(255,200,140,0) 60%); }
+  .layer { position: absolute; left: 0; right: 0; bottom: 0; }
+  .cloud { position: absolute; }
+  .shade { position: absolute; inset: 0; }
+  .ground { position: absolute; left: 0; right: 0; }
+  .ground .row { background-repeat: repeat-x; }
+  .motes i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.75); box-shadow: 0 0 10px rgba(255,255,255,0.9); }
+
+  /* ---- Shared UI ---- */
+  .glass { background: var(--glass); border: 1.5px solid var(--glass-line); backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 10px 30px rgba(5, 8, 30, 0.35); }
+  .card { border-radius: 22px; }
+  .gold-rim { border: 2px solid transparent; background:
+    linear-gradient(var(--navy), #141836) padding-box,
+    linear-gradient(135deg, #fff1b0, #e0a23a 40%, #7a4a10 60%, #ffd979) border-box; }
+  .title { font: 400 26px/1 var(--display); letter-spacing: 0.5px; -webkit-text-stroke: 5px var(--ink); paint-order: stroke fill; }
+  .sub { font: 900 10.5px var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: #aeb6e0; }
+  .btn3d { position: relative; border-radius: 18px; border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center; gap: 10px;
+    color: #fff; box-shadow: 0 5px 0 var(--ink), 0 12px 20px rgba(0,0,0,0.25); padding: 9px 16px 11px; }
+  .btn3d::after { content: ""; position: absolute; left: 8px; right: 8px; top: 4px; height: 40%; border-radius: 12px 12px 26px 26px;
+    background: linear-gradient(rgba(255,255,255,0.55), rgba(255,255,255,0)); pointer-events: none; }
+  .btn3d b { font: 400 21px/1 var(--display); letter-spacing: 0.5px; -webkit-text-stroke: 4px rgba(22,26,51,0.9); paint-order: stroke fill; }
+  .btn3d small { display: block; font: 800 11px var(--body); margin-top: 3px; }
+  .btn3d svg { width: 22px; height: 22px; flex: none; filter: drop-shadow(0 2px 0 rgba(22,26,51,0.8)); }
+  .green { background: linear-gradient(var(--play-1), var(--play-2) 55%, var(--play-3)); }
+  .blue { background: linear-gradient(var(--blue-1), var(--blue-2) 55%, var(--blue-3)); }
+  .purple { background: linear-gradient(var(--purple-1), var(--purple-2) 55%, var(--purple-3)); }
+  .goldbtn { background: linear-gradient(var(--gold-1), var(--gold-2) 50%, var(--gold-3)); }
+  .goldbtn b { -webkit-text-stroke: 4px rgba(90, 50, 0, 0.85); }
+  .dark { background: linear-gradient(#3a4272, #222851 60%, #171b3a); }
+  .chip { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 4px 12px 4px 5px; font: 900 14px var(--body); }
+  .iconbtn { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; }
+  .iconbtn svg { width: 20px; height: 20px; }
+  .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; position: relative; flex: none;
+    background: radial-gradient(circle at 35% 30%, #ffffff, #cfe0f7); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--ink); }
+  .avatar img { position: absolute; width: 150%; left: -18%; top: -6%; }
+  .tag { position: absolute; transform: translateX(-50%); font: 900 10px var(--body); padding: 2px 8px; border-radius: 999px; border: 2px solid var(--ink); white-space: nowrap; }
+  .shadow { position: absolute; height: 8px; border-radius: 50%; background: radial-gradient(rgba(20,10,0,0.45), rgba(20,10,0,0)); transform: translateX(-50%); }
+
+  /* Logo */
+  .word { position: relative; display: block; font: 400 54px/0.95 var(--display); letter-spacing: 1px; }
+  .word span { display: block; }
+  .word .back { position: absolute; inset: 0; color: var(--ink); -webkit-text-stroke: 8px var(--ink); text-shadow: 0 6px 0 var(--ink), 0 12px 18px rgba(0,0,0,0.3); }
+  .word .front { position: relative; color: #fff; }
+  .word.gold .front { background: linear-gradient(#fff6b8 10%, #ffcc33 55%, #ff8a1a 95%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  .label { position: absolute; left: 12px; bottom: 10px; font: 900 11px var(--body); background: rgba(0,0,0,0.55); padding: 4px 10px; border-radius: 8px; letter-spacing: 0.06em; display: none; }
+</style>
+</head>
+<body>
+
+<!-- 1. Splash -->
+<div class="stage" id="s-splash" data-world="ground:74">
+  <div class="shade" style="background:radial-gradient(ellipse at 50% 45%, rgba(10,12,40,0) 30%, rgba(10,12,40,0.55) 100%)"></div>
+  <div style="position:absolute;left:50%;top:44px;transform:translateX(-50%) rotate(-3deg);text-align:center">
+    <span class="word" style="font-size:66px"><span class="back">COIN</span><span class="front">COIN</span></span>
+    <span class="word gold" style="font-size:66px;margin-top:-4px"><span class="back">HOPPER</span><span class="front">HOPPER</span></span>
+  </div>
+  <div id="lineup" style="position:absolute;left:0;right:0;bottom:70px;display:flex;justify-content:center;gap:22px"></div>
+  <div class="glass" style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:300px;border-radius:999px;padding:5px">
+    <div style="height:12px;border-radius:999px;background:rgba(255,255,255,0.12);overflow:hidden">
+      <div style="width:72%;height:100%;border-radius:999px;background:linear-gradient(90deg,#ffe07a,#ffb21f);box-shadow:0 0 12px rgba(255,200,60,0.8)"></div>
+    </div>
+  </div>
+  <div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);font:800 11px var(--body);color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.6)">Building your course… 72%</div>
+  <div class="label">1 · SPLASH</div>
+</div>
+
+<!-- 2. Home -->
+<div class="stage" id="s-home" data-world="ground:74">
+  <div class="shade" style="background:radial-gradient(ellipse at 45% 55%, rgba(0,0,0,0) 55%, rgba(10,14,40,0.35) 100%)"></div>
+  <div style="position:absolute;top:12px;left:14px;right:14px;display:flex;align-items:center;gap:10px">
+    <div class="chip glass" style="padding:4px 16px 4px 4px"><div class="avatar"><img data-k="char-hopper"></div>
+      <div><div style="font:900 15px/1 var(--body)">Yariv</div><div style="font:800 11px var(--body);color:#ffd96a;margin-top:2px">Level 4 · 320 / 500 XP</div></div></div>
+    <div style="flex:1"></div>
+    <div class="chip glass"><img data-k="trophy" style="width:26px">12</div>
+    <div class="chip glass"><img data-k="coin" style="width:26px">1,240</div>
+    <div class="iconbtn glass" data-icon="sound"></div>
+    <div class="iconbtn glass" data-icon="gear"></div>
+  </div>
+  <div style="position:absolute;left:30px;top:74px;transform:rotate(-4deg)">
+    <span class="word"><span class="back">COIN</span><span class="front">COIN</span></span>
+    <span class="word gold" style="margin-left:26px"><span class="back">HOPPER</span><span class="front">HOPPER</span></span>
+  </div>
+  <div style="position:absolute;left:300px;top:66px;width:230px;height:300px">
+    <div style="position:absolute;left:15px;top:6px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,250,220,0.85),rgba(255,255,255,0) 65%)"></div>
+    <div style="position:absolute;left:25px;bottom:36px;width:180px;height:44px;border-radius:50%;border:3px solid var(--ink);
+      background:radial-gradient(ellipse at 50% 30%,#fffbe8 0%,#ffe9a8 45%,#d9a440 100%);box-shadow:0 8px 0 #8a5a12,0 16px 24px rgba(0,0,0,0.3)"></div>
+    <img data-k="char-hopper" style="position:absolute;left:50%;bottom:58px;width:168px;transform:translateX(-50%);filter:drop-shadow(0 8px 6px rgba(0,0,0,0.25))">
+    <div class="iconbtn" data-icon="left" style="color:#161a33;position:absolute;top:110px;left:-8px;width:40px;height:52px;background:linear-gradient(#fff,#dfe9f7);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink)"></div>
+    <div class="iconbtn" data-icon="right" style="color:#161a33;position:absolute;top:110px;right:-8px;width:40px;height:52px;background:linear-gradient(#fff,#dfe9f7);border:3px solid var(--ink);box-shadow:0 4px 0 var(--ink)"></div>
+    <div style="position:absolute;left:50%;bottom:0;transform:translateX(-50%);text-align:center">
+      <div class="title" style="font-size:22px">HOPPER</div>
+      <div style="display:flex;gap:5px;justify-content:center;margin-top:5px"><i style="width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px var(--ink)"></i><i style="width:7px;height:7px;margin-top:1px;border-radius:50%;background:rgba(22,26,51,0.4)"></i><i style="width:7px;height:7px;margin-top:1px;border-radius:50%;background:rgba(22,26,51,0.4)"></i><i style="width:7px;height:7px;margin-top:1px;border-radius:50%;background:rgba(22,26,51,0.4)"></i><i style="width:7px;height:7px;margin-top:1px;border-radius:50%;background:rgba(22,26,51,0.4)"></i><i style="width:7px;height:7px;margin-top:1px;border-radius:50%;background:rgba(22,26,51,0.4)"></i></div>
+    </div>
+  </div>
+  <div style="position:absolute;right:22px;top:74px;width:250px;display:flex;flex-direction:column;gap:12px">
+    <div class="btn3d green" style="justify-content:flex-start;padding:13px 18px 15px"><span data-icon="play" style="display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,0.22)"></span><div><b style="font-size:33px">PLAY</b><small>vs bots · 3 races</small></div></div>
+    <div class="btn3d blue" style="justify-content:flex-start"><span data-icon="users" style="display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.22)"></span><div><b>FRIENDS</b><small>Race up to 3 friends</small></div></div>
+    <div class="btn3d purple" style="justify-content:flex-start;padding:7px 14px 9px"><span data-icon="hash" style="display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.22)"></span><div><b style="font-size:19px">JOIN ROOM</b><small>Code or invite link</small></div></div>
+  </div>
+  <div class="label">2 · HOME</div>
+</div>
+
+<!-- 3. Friends room -->
+<div class="stage" id="s-lobby" data-world="ground:74">
+  <div class="shade" style="background:rgba(10,12,40,0.45)"></div>
+  <div style="position:absolute;top:14px;left:14px;display:flex;gap:10px;align-items:center">
+    <div class="iconbtn glass" data-icon="back"></div>
+    <div class="title" style="font-size:24px">FRIENDS ROOM</div>
+  </div>
+  <div class="card gold-rim" style="position:absolute;left:14px;top:68px;width:290px;height:300px;padding:18px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;box-shadow:0 14px 30px rgba(0,0,0,0.4)">
+    <div class="sub">Room code</div>
+    <div style="display:flex;gap:8px" id="codetiles"></div>
+    <div style="font:800 12px/1.4 var(--body);color:#c6cdee">Send the link. Friends tap it and they're in.</div>
+    <div class="btn3d blue" style="padding:8px 12px 10px"><span data-icon="link"></span><b style="font-size:17px">COPY INVITE LINK</b></div>
+    <div class="btn3d" style="padding:8px 12px 10px;background:linear-gradient(#7ff0a0,#25c35a 55%,#138a3c)"><span data-icon="chat"></span><b style="font-size:17px">SEND ON WHATSAPP</b></div>
+  </div>
+  <div style="position:absolute;left:318px;top:68px;right:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px" id="slots"></div>
+  <div style="position:absolute;left:318px;right:14px;bottom:16px;display:flex;gap:12px;align-items:center">
+    <div class="glass" style="border-radius:16px;padding:10px 14px;display:flex;align-items:center;gap:10px;font:800 13px var(--body)">
+      <span style="width:42px;height:24px;border-radius:999px;background:#2fc24d;position:relative;box-shadow:inset 0 2px 3px rgba(0,0,0,0.3)"><i style="position:absolute;right:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff"></i></span>Fill with bots</div>
+    <div class="btn3d goldbtn" style="flex:1;padding:12px"><span data-icon="play" style="color:#5a3200"></span><b style="font-size:24px">START MATCH</b></div>
+  </div>
+  <div class="label">3 · FRIENDS ROOM</div>
+</div>
+
+<!-- 4. Race -->
+<div class="stage" id="s-race" data-world="race">
+  <!-- HUD -->
+  <div style="position:absolute;left:12px;top:10px;display:flex;flex-direction:column;gap:6px">
+    <div class="glass" style="border-radius:14px;padding:5px 12px 6px;display:flex;align-items:center;gap:10px">
+      <span data-icon="timer" style="color:#ffd96a"></span><span style="font:400 22px/1 var(--display);font-variant-numeric:tabular-nums">0:24.31</span>
+      <span style="font:900 10px var(--body);color:#aeb6e0;border-left:1px solid rgba(255,255,255,0.2);padding-left:10px">RACE 2/3</span>
+    </div>
+    <div style="position:relative;font:400 46px/0.9 var(--display);margin-left:4px">
+      <span style="position:absolute;left:0;top:0;color:#161a33;-webkit-text-stroke:7px #161a33;text-shadow:0 4px 0 #161a33">2<span style="font-size:22px">ND</span></span>
+      <span style="position:relative;background:linear-gradient(#fff6c2,#ffd23f 55%,#ff9a1a);-webkit-background-clip:text;background-clip:text;color:transparent">2<span style="font-size:22px">ND</span></span>
+    </div>
+  </div>
+  <div class="glass" style="position:absolute;left:50%;top:12px;transform:translateX(-50%);width:330px;height:16px;border-radius:999px;padding:0">
+    <div style="position:absolute;left:8px;right:28px;top:6px;height:4px;border-radius:2px;background:rgba(255,255,255,0.25)"></div>
+    <div style="position:absolute;left:8px;width:52%;top:6px;height:4px;border-radius:2px;background:linear-gradient(90deg,#ffe07a,#ffb21f)"></div>
+    <img data-k="flag" style="position:absolute;right:2px;top:-12px;width:20px">
+    <div id="trackmarks"></div>
+  </div>
+  <div style="position:absolute;right:12px;top:8px;display:flex;align-items:center;gap:8px">
+    <div style="display:flex;gap:3px" id="coinpips"></div>
+    <div style="position:relative;width:64px;height:64px">
+      <svg viewBox="0 0 64 64" style="position:absolute;inset:0"><circle cx="32" cy="32" r="29" fill="rgba(22,26,56,0.75)" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+        <circle cx="32" cy="32" r="29" fill="none" stroke="#ffd23f" stroke-width="4" stroke-dasharray="182" stroke-dashoffset="0" stroke-linecap="round" transform="rotate(-90 32 32)"/></svg>
+      <div style="position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,rgba(255,170,60,0.7),rgba(255,120,30,0) 70%)"></div>
+      <img data-k="fireball" style="position:absolute;left:12px;top:20px;width:40px">
+    </div>
+  </div>
+  <!-- touch controls -->
+  <div style="position:absolute;left:18px;bottom:14px;display:flex;gap:14px">
+    <div class="glass" data-icon="left" style="color:#fff;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;border:2px solid rgba(255,255,255,0.45)"></div>
+    <div class="glass" data-icon="right" style="color:#fff;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;border:2px solid rgba(255,255,255,0.45)"></div>
+  </div>
+  <div style="position:absolute;right:18px;bottom:14px;display:flex;gap:14px;align-items:flex-end">
+    <div style="width:70px;height:70px;border-radius:50%;margin-bottom:34px;display:grid;place-items:center;border:3px solid rgba(255,220,255,0.8);
+      background:radial-gradient(circle at 35% 30%,rgba(200,160,255,0.9),rgba(120,60,230,0.85));box-shadow:0 0 20px rgba(160,100,255,0.7)"><img data-k="fireball" style="width:42px"></div>
+    <div data-icon="up" style="width:90px;height:90px;border-radius:50%;display:grid;place-items:center;border:3px solid rgba(255,250,210,0.95);
+      background:radial-gradient(circle at 35% 30%,rgba(255,240,170,0.95),rgba(255,190,40,0.9));color:#5a3200;box-shadow:0 0 18px rgba(255,200,60,0.55)"></div>
+  </div>
+  <div class="label">4 · RACE</div>
+</div>
+
+<!-- 5. Results -->
+<div class="stage" id="s-results" data-world="ground:74">
+  <div class="shade" style="background:rgba(10,12,40,0.5)"></div>
+  <div style="position:absolute;left:50%;top:10px;transform:translateX(-50%);text-align:center">
+    <div style="display:inline-block;position:relative;padding:6px 34px 8px;background:linear-gradient(#ff7a8a,#e23a55 60%,#a8213a);border:3px solid var(--ink);border-radius:10px;box-shadow:0 4px 0 var(--ink)">
+      <span class="title" style="font-size:22px">RACE 2 OF 3</span></div>
+  </div>
+  <div class="card gold-rim" style="position:absolute;left:24px;top:60px;width:430px;padding:14px 16px;box-sizing:border-box;box-shadow:0 14px 30px rgba(0,0,0,0.45)">
+    <div class="sub" style="margin-bottom:8px">Finish order</div>
+    <div id="resrows" style="display:flex;flex-direction:column;gap:7px"></div>
+  </div>
+  <div class="card glass" style="position:absolute;right:24px;top:60px;width:330px;padding:14px 16px;box-sizing:border-box">
+    <div class="sub" style="margin-bottom:8px">Match points</div>
+    <div id="standrows" style="display:flex;flex-direction:column;gap:9px"></div>
+  </div>
+  <div style="position:absolute;right:24px;bottom:16px;display:flex;gap:10px;width:330px">
+    <div class="btn3d dark" style="padding:10px 16px"><b style="font-size:18px">HOME</b></div>
+    <div class="btn3d green" style="flex:1;padding:10px"><b style="font-size:20px">NEXT RACE</b><span style="width:26px;height:26px;border-radius:50%;border:3px solid #fff;display:grid;place-items:center;font:900 12px var(--body)">8</span></div>
+  </div>
+  <div class="label">5 · RESULTS</div>
+</div>
+
+<!-- 6. Podium -->
+<div class="stage" id="s-podium" data-world="ground:56">
+  <div class="shade" style="background:linear-gradient(rgba(10,12,40,0.55),rgba(10,12,40,0.1))"></div>
+  <div class="shade" style="background:conic-gradient(from 200deg at 38% -10%, rgba(255,240,190,0) 0deg, rgba(255,240,190,0.28) 8deg, rgba(255,240,190,0) 16deg, rgba(255,240,190,0) 30deg, rgba(255,240,190,0.22) 38deg, rgba(255,240,190,0) 46deg, rgba(255,240,190,0) 60deg, rgba(255,240,190,0.25) 68deg, rgba(255,240,190,0) 76deg)"></div>
+  <div id="confetti"></div>
+  <div id="podium" style="position:absolute;left:60px;bottom:56px;width:420px;height:300px"></div>
+  <div class="card gold-rim" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);width:270px;padding:18px;box-sizing:border-box;text-align:center;box-shadow:0 14px 30px rgba(0,0,0,0.45)">
+    <img data-k="trophy" style="width:64px;margin-top:-50px;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.4))">
+    <div class="sub" style="margin-top:4px">Match winner</div>
+    <div class="title" style="font-size:30px;margin:6px 0 2px;color:#ffd23f">YARIV</div>
+    <div style="font:800 12px var(--body);color:#c6cdee">24 points · 2 race wins</div>
+    <div style="display:flex;justify-content:center;gap:6px;margin:12px 0">
+      <span class="chip" style="background:rgba(255,210,63,0.18);color:#ffd96a;font-size:12px;padding:4px 10px">+120 coins</span>
+      <span class="chip" style="background:rgba(143,224,74,0.18);color:#a6f07a;font-size:12px;padding:4px 10px">+80 XP</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="btn3d dark" style="padding:9px 12px"><b style="font-size:16px">HOME</b></div>
+      <div class="btn3d goldbtn" style="flex:1;padding:9px"><b style="font-size:18px">REMATCH</b></div>
+    </div>
+  </div>
+  <div class="label">6 · PODIUM</div>
+</div>
+
+<script>
+const ICONS = {
+  sound: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="#fff"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  gear: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="#161a33" stroke-width="2" stroke-linejoin="round"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="#fff" stroke="#161a33" stroke-width="1.6"><circle cx="9" cy="8" r="3.6"/><path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6z"/><circle cx="17" cy="9" r="2.8"/><path d="M15.5 14.2c3.6-.4 6 1.6 6 5.8h-4.4"/></svg>',
+  hash: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M9 3 7 21M17 3l-2 18M4 8.5h17M3 15.5h17"/></svg>',
+  left: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M15.5 4 7 12l8.5 8" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  right: '<svg viewBox="0 0 24 24" width="30" height="30"><path d="M8.5 4 17 12l-8.5 8" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  up: '<svg viewBox="0 0 24 24" width="40" height="40"><path d="M4 16 12 7.5 20 16" fill="none" stroke="#5a3200" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  back: '<svg viewBox="0 0 24 24"><path d="M15 4 7 12l8 8" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  link: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/></svg>',
+  chat: '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3z" fill="#fff" stroke="#161a33" stroke-width="1.6"/></svg>',
+  timer: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 3h5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M5 12.5 10 17 19 7" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  crown: '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#ffd23f" stroke="#161a33" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+const CH = { hopper: '#4f86da', frogo: '#4cbf5a', mimi: '#e8559a', bolt: '#f2c230', pingo: '#6f8cff', foxy: '#ff8a3d' };
+const el = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; };
+const av = (c, size = 40) => `<div class="avatar" style="width:${size}px;height:${size}px;box-shadow:0 0 0 2px var(--ink),0 0 0 5px ${CH[c]}"><img src="${U['char-' + c]}"></div>`;
+
+// World backgrounds.
+const MOUNTAINS = (c1, c2) => `<svg viewBox="0 0 844 200" preserveAspectRatio="none" style="width:100%;height:100%;display:block">
+  <path d="M0 140 L70 70 L120 110 L190 40 L260 120 L330 60 L410 130 L480 50 L560 120 L640 70 L720 125 L790 60 L844 100 V200 H0Z" fill="${c1}"/>
+  <path d="M0 160 L90 110 L160 150 L250 95 L340 155 L430 100 L520 160 L610 105 L700 150 L780 110 L844 140 V200 H0Z" fill="${c2}"/></svg>`;
+const TREES = (n, seed) => { let s = ''; for (let i = 0; i < n; i++) { const x = (i * 97 + seed * 37) % 844, h = 34 + ((i * 53 + seed) % 22);
+  s += `<g transform="translate(${x} ${120 - h})"><rect x="-3" y="${h - 14}" width="6" height="16" fill="#5b4a3a"/><circle cx="0" cy="${h - 22}" r="${h / 2.6}" fill="#4e9c5a"/><circle cx="-6" cy="${h - 16}" r="${h / 3.4}" fill="#5aae66"/><circle cx="5" cy="${h - 28}" r="${h / 4}" fill="#78c47e"/></g>`; }
+  return `<svg viewBox="0 0 844 140" preserveAspectRatio="none" style="width:100%;height:100%;display:block"><path d="M0 70 C150 30 260 60 420 50 C580 40 700 20 844 55 V140 H0Z" fill="#8cc98f"/>${s}<path d="M0 100 C200 80 400 105 600 92 C700 86 780 90 844 95 V140 H0Z" fill="#6db478"/></svg>`; };
+
+function world(stage) {
+  const spec = stage.dataset.world;
+  const race = spec === 'race';
+  const groundH = race ? 124 : +spec.split(':')[1];
+  const tile = race ? 42 : 37;
+  const groundTop = 390 - groundH;
+  const parts = [`<div class="sky"></div><div class="sunglow"></div>`];
+  [[40, 18, 120, 0.95], [470, 34, 90, 0.75], [640, 6, 150, 0.7], [250, 70, 70, 0.6]].forEach(([x, y, w, o]) => parts.push(`<img class="cloud" src="${U.cloud}" style="left:${x}px;top:${y}px;width:${w}px;opacity:${o}">`));
+  parts.push(`<div class="layer" style="bottom:${groundH + 40}px;height:150px;opacity:0.9">${MOUNTAINS('#a9c6e6', '#8fb3dc')}</div>`);
+  parts.push(`<div class="layer" style="bottom:${groundH - 10}px;height:140px">${TREES(10, race ? 3 : 1)}</div>`);
+  parts.push(`<div class="motes">${[[120, 90], [300, 60], [520, 120], [700, 80], [610, 40]].map(([x, y]) => `<i style="left:${x}px;top:${y}px;opacity:${0.4 + (x % 5) / 10}"></i>`).join('')}</div>`);
+  if (!race) {
+    parts.push(`<div class="ground" style="top:${groundTop}px;bottom:0"><div class="row" style="height:${tile}px;background-image:url(${U.grass});background-size:${tile}px ${tile}px"></div><div class="row" style="height:${groundH - tile}px;background-image:url(${U.dirt});background-size:${tile}px ${tile}px"></div></div>`);
+  } else {
+    // A stretch of course: ground with a pit and a raised step, a platform, coins, a capsule and an enemy.
+    const cols = 21; let html = '';
+    for (let c = 0; c < cols; c++) {
+      if (c === 9 || c === 10) continue;
+      const step = c >= 15 && c <= 17 ? 1 : 0;
+      const top = groundTop - step * tile;
+      html += `<img src="${U.grass}" style="position:absolute;left:${c * tile}px;top:${top}px;width:${tile}px">`;
+      for (let y = top + tile; y < 390; y += tile) html += `<img src="${U.dirt}" style="position:absolute;left:${c * tile}px;top:${y}px;width:${tile}px">`;
+    }
+    for (let i = 0; i < 3; i++) html += `<img src="${U.plank}" style="position:absolute;left:${(8 + i) * tile}px;top:${groundTop - 2.2 * tile}px;width:${tile}px">`;
+    [[8.5, 3.2], [9.5, 3.4], [10.5, 3.2], [13, 1], [14, 1]].forEach(([c, r]) => html += `<img src="${U.coin}" style="position:absolute;left:${c * tile - 11}px;top:${groundTop - r * tile - 12}px;width:24px;filter:drop-shadow(0 0 6px rgba(255,220,90,0.9))">`);
+    html += `<img src="${U.box}" style="position:absolute;left:${18.6 * tile}px;top:${groundTop - 2 * tile - 6}px;width:40px;filter:drop-shadow(0 0 10px rgba(150,240,255,0.9))">`;
+    html += `<div class="shadow" style="left:${12.4 * tile}px;top:${groundTop - 4}px;width:36px"></div><img src="${U.enemy}" style="position:absolute;left:${12.4 * tile - 20}px;top:${groundTop - 31}px;width:40px">`;
+    // Runners.
+    const runners = [['hopper', 5.6, 0, 'YOU', -6], ['foxy', 7.3, 1.3, 'Dana', 4], ['frogo', 3.4, 0, 'Zippy', 0], ['mimi', 1.6, 0, 'Momo', 0]];
+    runners.forEach(([c, x, lift, name, rot]) => {
+      const px = x * tile, py = groundTop - lift * tile;
+      if (!lift) html += `<div class="shadow" style="left:${px}px;top:${py - 4}px;width:34px"></div>`;
+      html += `<img src="${U['char-' + c]}" style="position:absolute;left:${px - 20}px;top:${py - 46}px;width:40px;transform:rotate(${rot}deg)">`;
+      html += `<div class="tag" style="left:${px}px;top:${py - 64}px;background:${name === 'YOU' ? '#ffd23f' : CH[c]};color:${name === 'YOU' ? '#3a2400' : '#fff'}">${name}</div>`;
+    });
+    // Fireball from Dana, with a trail, and speed lines behind me.
+    html += `<img src="${U.fireball}" style="position:absolute;left:${8.4 * tile}px;top:${groundTop - 1.7 * tile - 14}px;width:46px;filter:drop-shadow(0 0 10px rgba(255,140,40,0.9))">`;
+    for (let i = 0; i < 4; i++) html += `<i style="position:absolute;left:${4.3 * tile - i * 18}px;top:${groundTop - 34 + i * 7}px;width:${30 - i * 4}px;height:3px;border-radius:2px;background:rgba(255,255,255,0.7)"></i>`;
+    parts.push(html);
+  }
+  stage.insertAdjacentHTML('afterbegin', parts.join(''));
+}
+
+document.querySelectorAll('.stage').forEach(world);
+document.querySelectorAll('[data-k]').forEach((img) => { img.src = U[img.dataset.k]; });
+document.querySelectorAll('[data-icon]').forEach((n) => { n.insertAdjacentHTML('afterbegin', ICONS[n.dataset.icon]); });
+
+// Splash lineup.
+Object.keys(CH).forEach((c, i) => document.getElementById('lineup').insertAdjacentHTML('beforeend',
+  `<img src="${U['char-' + c]}" style="width:66px;transform:translateY(${i % 2 ? -10 : 0}px);filter:drop-shadow(0 6px 4px rgba(0,0,0,0.3))">`));
+
+// Lobby.
+'K7QM'.split('').forEach((ch) => document.getElementById('codetiles').insertAdjacentHTML('beforeend',
+  `<div style="width:54px;height:62px;border-radius:14px;display:grid;place-items:center;font:400 36px var(--display);color:#3a2400;border:3px solid var(--ink);
+    background:linear-gradient(#fff6c2,#ffd23f 55%,#e08a12);box-shadow:0 4px 0 var(--ink),inset 0 2px 0 rgba(255,255,255,0.7)">${ch}</div>`));
+[['hopper', 'Yariv', 'HOST', 'crown'], ['foxy', 'Dana', 'READY', 'check'], ['mimi', 'Noa', 'JOINING…', ''], [null, '', '', '']].forEach(([c, n, st, ic]) => {
+  document.getElementById('slots').insertAdjacentHTML('beforeend', c
+    ? `<div class="glass" style="border-radius:18px;padding:10px 12px;display:flex;align-items:center;gap:12px;height:92px;box-sizing:border-box">
+        <div style="position:relative">${av(c, 56)}${ic ? `<span style="position:absolute;right:-6px;top:-8px">${ICONS[ic].replace('width="16" height="16"', 'width="14" height="14"').replace('<svg', ic === 'check' ? '<svg style="background:#2fc24d;border-radius:50%;padding:3px;border:2px solid #161a33"' : '<svg')}</span>` : ''}</div>
+        <div><div style="font:900 16px var(--body)">${n}</div><div style="font:900 10px var(--body);letter-spacing:0.1em;color:${st === 'READY' ? '#8ff58a' : st === 'HOST' ? '#ffd96a' : '#aeb6e0'};margin-top:3px">${st}</div>
+        <div style="font:800 11px var(--body);color:#c6cdee;margin-top:2px">${c[0].toUpperCase() + c.slice(1)}</div></div></div>`
+    : `<div style="border-radius:18px;height:92px;border:2px dashed rgba(255,255,255,0.35);display:flex;align-items:center;justify-content:center;gap:10px;color:#c6cdee;font:800 13px var(--body);background:rgba(22,26,56,0.35)">
+        <img src="${U['char-bolt']}" style="width:34px;opacity:0.55;filter:grayscale(0.4)"> Empty spot · a bot will join</div>`);
+});
+
+// Race HUD.
+[['mimi', 0.16], ['frogo', 0.3], ['hopper', 0.5], ['foxy', 0.68]].forEach(([c, p]) => document.getElementById('trackmarks').insertAdjacentHTML('beforeend',
+  `<div style="position:absolute;left:${8 + p * 294 - (c === 'hopper' ? 15 : 11)}px;top:${c === 'hopper' ? -7 : -3}px">${av(c, c === 'hopper' ? 30 : 22)}</div>`));
+for (let i = 0; i < 5; i++) document.getElementById('coinpips').insertAdjacentHTML('beforeend',
+  `<i style="width:10px;height:10px;border-radius:50%;border:2px solid var(--ink);background:${i < 3 ? 'radial-gradient(circle at 35% 30%,#fff3b0,#ffcc33 50%,#c47f0a)' : 'rgba(22,26,56,0.6)'}"></i>`);
+
+// Results.
+const MEDAL = ['linear-gradient(#fff6c2,#ffd23f 50%,#d48a10)', 'linear-gradient(#ffffff,#d6dce8 50%,#8f9bb0)', 'linear-gradient(#ffd2a8,#e0904f 50%,#9a5520)', 'linear-gradient(#5a6290,#3a4170)'];
+[['foxy', 'Dana', '0:31.08', 10], ['hopper', 'Yariv (you)', '0:32.44', 6], ['frogo', 'Zippy', '0:35.90', 3], ['mimi', 'Momo', '0:41.12', 1]].forEach(([c, n, t, p], i) =>
+  document.getElementById('resrows').insertAdjacentHTML('beforeend',
+    `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:14px;background:${n.includes('you') ? 'linear-gradient(90deg,rgba(255,210,63,0.28),rgba(255,210,63,0.06))' : 'rgba(255,255,255,0.06)'};border:1.5px solid ${n.includes('you') ? 'rgba(255,210,63,0.6)' : 'transparent'}">
+      <span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:400 16px var(--display);color:${i < 3 ? '#3a2400' : '#fff'};background:${MEDAL[i]};border:2px solid var(--ink)">${i + 1}</span>
+      ${av(c, 32)}<span style="font:900 14px var(--body);flex:1">${n}</span>
+      <span style="font:800 13px var(--body);font-variant-numeric:tabular-nums;color:#c6cdee">${t}</span>
+      <span style="font:400 15px var(--display);color:#3a2400;background:linear-gradient(#c8ff9a,#62d84f);border:2px solid var(--ink);border-radius:999px;padding:1px 9px;min-width:30px;text-align:center">+${p}</span></div>`));
+[['hopper', 'Yariv', 16], ['foxy', 'Dana', 13], ['frogo', 'Zippy', 6], ['mimi', 'Momo', 4]].forEach(([c, n, p]) =>
+  document.getElementById('standrows').insertAdjacentHTML('beforeend',
+    `<div style="display:flex;align-items:center;gap:10px">${av(c, 28)}<div style="flex:1"><div style="display:flex;justify-content:space-between;font:900 13px var(--body)"><span>${n}</span><span style="color:#ffd96a">${p}</span></div>
+      <div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.12);margin-top:4px"><div style="width:${p / 20 * 100}%;height:100%;border-radius:4px;background:linear-gradient(90deg,${CH[c]},#fff)"></div></div></div></div>`));
+
+// Podium.
+const pod = document.getElementById('podium');
+[['frogo', 1, 130, 95, 'linear-gradient(#ffffff,#d6dce8 40%,#9aa6bc)', 'Zippy', 13], ['hopper', 0, 275, 140, 'linear-gradient(#fff6c2,#ffd23f 40%,#d48a10)', 'Yariv', 24], ['foxy', 2, 0, 65, 'linear-gradient(#ffd2a8,#e0904f 40%,#9a5520)', 'Dana', 10]].forEach(([c, place, x, h, bg, n, pts]) => {
+  const w = 130, left = [140, 0, 280][place];
+  pod.insertAdjacentHTML('beforeend', `<div style="position:absolute;left:${left}px;bottom:0;width:${w}px;height:${h}px;border-radius:14px 14px 4px 4px;border:3px solid var(--ink);background:${bg};box-shadow:0 6px 0 var(--ink),inset 0 4px 0 rgba(255,255,255,0.6)">
+      <div style="text-align:center;font:400 46px/1 var(--display);margin-top:${h / 2 - 26}px;color:#fff;-webkit-text-stroke:6px var(--ink);paint-order:stroke fill">${place + 1}</div></div>
+    <img src="${U['char-' + c]}" style="position:absolute;left:${left + w / 2 - 38}px;bottom:${h + 2}px;width:76px;filter:drop-shadow(0 6px 4px rgba(0,0,0,0.35))">
+    ${place === 0 ? `<div style="position:absolute;left:${left + w / 2 - 16}px;bottom:${h + 84}px;transform:rotate(-8deg)">${ICONS.crown.replace(/22/g, '32')}</div>` : ''}
+    <div class="tag" style="left:${left + w / 2}px;bottom:${h - 16}px;background:${CH[c]};color:#fff;font-size:11px">${n} · ${pts}</div>`);
+});
+const cf = document.getElementById('confetti');
+const cols = ['#ff4d6d', '#ffd23f', '#4cbf5a', '#4f86da', '#e8559a', '#9b6bff'];
+for (let i = 0; i < 60; i++) cf.insertAdjacentHTML('beforeend', `<i style="position:absolute;left:${(i * 73) % 844}px;top:${(i * 37) % 300}px;width:6px;height:11px;background:${cols[i % 6]};transform:rotate(${i * 47}deg);border-radius:2px;opacity:0.9"></i>`);
+</script>
+</body>
+</html>
